@@ -1,4 +1,4 @@
-package examplefuncsplayer.bots;
+package abra.bots;
 
 import battlecode.common.RobotController;
 

@@ -1,4 +1,5 @@
-package examplefuncsplayer;
+package abra;
+import abra.bots.*;
 import battlecode.common.*;
 
 public strictfp class RobotPlayer {
@@ -15,9 +16,24 @@ public strictfp class RobotPlayer {
         // and to get information on its current status.
         RobotPlayer.rc = rc;
 
-        BaseController bc = new BaseController(rc);
-
-        bc.execute();
+        switch (rc.getType()) {
+            case ARCHON:
+                Archon.run(rc);
+                break;
+            case GARDENER:
+                Gardener.run(rc);
+                break;
+            case SOLDIER:
+                Soldier.run(rc);
+                break;
+            case LUMBERJACK:
+                Lumberjack.run(rc);
+                break;
+            case SCOUT:
+                Scout.run(rc);
+            case TANK:
+                Tank.run(rc);
+        }
 	}
 
     static void runArchon() throws GameActionException {

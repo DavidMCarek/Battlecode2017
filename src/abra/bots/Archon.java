@@ -1,4 +1,4 @@
-package examplefuncsplayer.bots;
+package abra.bots;
 
 import battlecode.common.BulletInfo;
 import battlecode.common.Direction;
