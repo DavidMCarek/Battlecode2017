@@ -7,7 +7,7 @@ public strictfp class RobotPlayer {
     static int soldiers=0;
     static int lumberjacks=0;
     static int tanks=0;
-
+    
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
      * If this method returns, the robot dies!
@@ -34,6 +34,11 @@ public strictfp class RobotPlayer {
             case LUMBERJACK:
                 runLumberjack();
                 break;
+            case TANK:
+            	runTank();
+            case SCOUT:
+            	runScout();
+            	break;
             
         }
 	}
@@ -53,6 +58,8 @@ public strictfp class RobotPlayer {
                 // Randomly attempt to build a gardener in this direction
                 if (rc.canHireGardener(dir) && gardeners<10) {
                     rc.hireGardener(dir);
+                    gardeners++;
+                    
                 }
 
                 // Move randomly
@@ -216,6 +223,10 @@ public strictfp class RobotPlayer {
      * Returns a random Direction
      * @return a random Direction
      */
+    
+    static void runScout() throws GameActionException{
+    	
+    }
     static Direction randomDirection() {
         return new Direction((float)Math.random() * 2 * (float)Math.PI);
     }
