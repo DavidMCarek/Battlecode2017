@@ -3,7 +3,7 @@ import battlecode.common.*;
 
 public strictfp class RobotPlayer {
     static RobotController rc;    
-    static int gardners=0;
+    static int gardeners=0;
     static int soldiers=0;
     static int lumberjacks=0;
     static int tanks=0;
@@ -34,6 +34,7 @@ public strictfp class RobotPlayer {
             case LUMBERJACK:
                 runLumberjack();
                 break;
+            
         }
 	}
 
@@ -50,7 +51,7 @@ public strictfp class RobotPlayer {
                 Direction dir = randomDirection();
 
                 // Randomly attempt to build a gardener in this direction
-                if (rc.canHireGardener(dir) && Math.random() < .01) {
+                if (rc.canHireGardener(dir) && gardeners<10) {
                     rc.hireGardener(dir);
                 }
 
