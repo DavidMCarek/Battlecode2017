@@ -1,14 +1,18 @@
+package support;
+import battlecode.common.*;
 //class helps determine the size of the field by gathering information from units that attempted to move
 //it gives a best estimate of the field parameters
-import battlecode.common.*;
 
-  class FieldInfo {
+
+  public class FieldInfo {
 	  
-	  static float westMost=0;
-	  static float eastMost=0;
-	  static float northMost=500;
-	  static float southMost=0;
-	  static TreeInfo trees[];
+	  public FieldInfo(){}
+	  
+	  private float westMost=0;
+	  private float eastMost=0;
+	  private float northMost=500;
+	  private float southMost=0;
+	  private TreeInfo trees[];
 	  
 	  public float[] getFieldSize()
 	  {
@@ -68,3 +72,4 @@ import battlecode.common.*;
 		  return -1;
 	}
 }
+

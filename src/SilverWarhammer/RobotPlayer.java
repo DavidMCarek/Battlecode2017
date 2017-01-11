@@ -1,5 +1,6 @@
 package SilverWarhammer;
 import battlecode.common.*;
+import support.FieldInfo;;
 
 public strictfp class RobotPlayer {
     static RobotController rc;    
@@ -7,7 +8,9 @@ public strictfp class RobotPlayer {
     static int soldiers=0;
     static int lumberjacks=0;
     static int tanks=0;
-    
+    static int scouts=0;
+    static FieldInfo field=new FieldInfo();
+ 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
      * If this method returns, the robot dies!
@@ -98,12 +101,49 @@ public strictfp class RobotPlayer {
                 Direction dir = randomDirection();
 
                 // build soldiers in a 3:1 ratio to tanks, if neither should or can't be built, make a scout or lumberjack
-                if (rc.canBuildRobot(RobotType.SOLDIER, dir) && 3*tanks>=soldiers) {
+                if(lumberjacks<2)
+                {
+                	if( rc.canBuildRobot(RobotType.LUMBERJACK, dir) )
+                	{
+                		rc.buildRobot(RobotType.LUMBERJACK, dir);
+                		lumberjacks++;
+                	}
+            			
+                }
+                else if (rc.canBuildRobot(RobotType.SOLDIER, dir) && 3*tanks>=soldiers) {
                     rc.buildRobot(RobotType.SOLDIER, dir);
+                    soldiers++;
                 }
                 else if(rc.canBuildRobot(RobotType.TANK, dir) )
                 {
                 	rc.buildRobot(RobotType.TANK, dir);
+                	tanks++;
+                }
+                else
+                {
+                	if(lumberjacks<3)
+                	{
+                		if( rc.canBuildRobot(RobotType.LUMBERJACK, dir) )
+                		{
+                			rc.buildRobot(RobotType.LUMBERJACK, dir);
+                			lumberjacks++;
+                		}
+                			
+                	}
+                	if(Math.round(Math.random())==1?true:false)
+                	{
+                		if( rc.canBuildRobot(RobotType.SCOUT, dir) )
+                			{
+                				rc.buildRobot(RobotType.SCOUT, dir);
+                				scouts++;
+                			}
+                		else if( rc.canBuildRobot(RobotType.LUMBERJACK, dir) )
+                		{
+                			rc.buildRobot(RobotType.LUMBERJACK, dir);
+                			lumberjacks++;
+                		}
+                			
+                	}
                 }
               //  else if (rc.canBuildRobot(RobotType.LUMBERJACK, dir) && Math.random() < .01 && rc.isBuildReady()) {
               //      rc.buildRobot(RobotType.LUMBERJACK, dir);
@@ -125,6 +165,7 @@ public strictfp class RobotPlayer {
     static void runSoldier() throws GameActionException {
         System.out.println("I'm an soldier!");
         Team enemy = rc.getTeam().opponent();
+        Direction firedShot=null;
 
         // The code you want your robot to perform every round should be in this loop
         while (true) {
@@ -143,10 +184,33 @@ public strictfp class RobotPlayer {
                         // ...Then fire a bullet in the direction of the enemy.
                         rc.fireSingleShot(rc.getLocation().directionTo(robots[0].location));
                     }
+                    
+                
                 }
+                else
+                {
+                	TreeInfo[] trees=rc.senseNearbyTrees();
+                	// int tree=field.getNearByTree(rc);
+                	 if(trees.length>0)
+                	 {
+                		 if(rc.canFireSingleShot())
+                		 {
+                			 rc.fireSingleShot(rc.getLocation().directionTo(trees[0].location));
+                			 firedShot=rc.getLocation().directionTo(trees[0].location);
+                		 }
+                			 
+                	 }
+                		 
+                }
+                
 
+                if(firedShot!=null)
+                tryMove(firedShot.rotateLeftDegrees(90));
+                else{
                 // Move randomly
                 tryMove(randomDirection());
+                }
+                
 
                 // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
                 Clock.yield();
@@ -203,21 +267,33 @@ public strictfp class RobotPlayer {
 
     static void runTank() throws GameActionException{
     	System.out.println("SIR YES SIR!");
-    	  tryMove(randomDirection());
-    	  Team enemy = rc.getTeam().opponent();
-    	  RobotInfo[] robots = rc.senseNearbyRobots(-1, enemy);
+    	while(true)
+    	{
+    		try
+    		{
+    			tryMove(randomDirection());
+    	    	  Team enemy = rc.getTeam().opponent();
+    	    	  RobotInfo[] robots = rc.senseNearbyRobots(-1, enemy);
 
-          // If there are some...
-          if (robots.length > 0) {
-              // And we have enough bullets, and haven't attacked yet this turn...
-              if (rc.canFireSingleShot()) {
-                  // ...Then fire a bullet in the direction of the enemy.
-                  rc.fireSingleShot(rc.getLocation().directionTo(robots[0].location));
-              }
-          }
-          
-          tryMove(randomDirection());
-          Clock.yield();
+    	          // If there are some...
+    	          if (robots.length > 0) {
+    	              // And we have enough bullets, and haven't attacked yet this turn...
+    	              if (rc.canFireSingleShot()) {
+    	                  // ...Then fire a bullet in the direction of the enemy.
+    	                  rc.fireSingleShot(rc.getLocation().directionTo(robots[0].location));
+    	              }
+    	          }
+    	          
+    	          tryMove(randomDirection());
+    	          Clock.yield();
+    		}
+    		catch(Exception e)
+    		{
+    			   System.out.println("Tank Exception");
+                   e.printStackTrace();
+    		}
+    	}
+    	
     }
     /**
      * Returns a random Direction
@@ -225,7 +301,21 @@ public strictfp class RobotPlayer {
      */
     
     static void runScout() throws GameActionException{
-    	
+    	while(true)
+    	{
+    		try
+    		{
+    			tryMove(randomDirection());
+    			Clock.yield();
+    		}
+    		catch (Exception e)
+    		{
+    			System.out.println("Scout Exception");
+    			e.printStackTrace();
+    		}
+    		
+    	}
+    	  
     }
     static Direction randomDirection() {
         return new Direction((float)Math.random() * 2 * (float)Math.PI);
