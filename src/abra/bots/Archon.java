@@ -3,17 +3,17 @@ package abra.bots;
 import abra.Utils;
 import battlecode.common.*;
 
-public class Archon {
+public strictfp class Archon {
     public static void run(RobotController rc) {
 
         while (true) {
             try {
 
                 boolean randomMove = true;
-                MapLocation botLocation = rc.getLocation();
 
                 BulletInfo[] bulletInfos = rc.senseNearbyBullets();
 
+                System.out.println(bulletInfos.length);
                 if (bulletInfos.length != 0) {
                     randomMove = false;
 
@@ -25,23 +25,30 @@ public class Archon {
                             else if (rc.canMove(bulletInfos[i].dir.rotateRightDegrees(90)))
                                 rc.move(bulletInfos[i].dir.rotateRightDegrees(90));
 
-                            else if (rc.canMove(bulletInfos[i].dir))
+                            else if (rc.canMove(bulletInfos[i].dir)){
                                 rc.move(bulletInfos[i].dir);
+                            }
 
-                            else rc.move(bulletInfos[i].dir.opposite());
+                            else {
+                                rc.move(bulletInfos[i].dir.opposite());
+                            }
                         }
-                        MapLocation bulletLoc = bulletInfos[i].getLocation();
-                        Direction bulletDir = bulletInfos[i].dir;
                     }
-                }
 
+                }
 
 
                 BulletInfo[] nearbyBullets = rc.senseNearbyBullets();
                 
                 int bullets = (int)rc.getTeamBullets();
 
-                rc.hasRobotBuildRequirements(RobotType.GARDENER);
+                if (rc.hasRobotBuildRequirements(RobotType.GARDENER))
+                    rc.buildRobot(RobotType.GARDENER, Utils.randomDirection());
+
+                if (randomMove)
+                    rc.move(Utils.randomDirection());
+
+                Clock.yield();
 
             } catch (Exception e) {
                 System.out.println("Archon Exception");

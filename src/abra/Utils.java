@@ -5,7 +5,7 @@ import battlecode.common.Direction;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 
-public class Utils {
+public strictfp class Utils {
     public static boolean willCollideWithMe(BulletInfo bullet, RobotController rc) {
         MapLocation myLocation = rc.getLocation();
 
@@ -23,5 +23,9 @@ public class Utils {
         float perpendicularDist = (float)Math.abs(distToRobot * Math.sin(theta)); // soh cah toa :)
 
         return (perpendicularDist <= rc.getType().bodyRadius);
+    }
+
+    public static Direction randomDirection() {
+        return new Direction((float)Math.random() * 2 * (float)Math.PI);
     }
 }
