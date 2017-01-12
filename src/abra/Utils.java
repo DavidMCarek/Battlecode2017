@@ -99,4 +99,47 @@ public strictfp class Utils {
 
         return null;
     }
+
+    public static boolean microAway(RobotController rc) throws GameActionException {
+
+        MapLocation robotLocation = rc.getLocation();
+
+        Team enemyTeam = rc.getTeam().opponent();
+
+        RobotInfo[] robotInfos = rc.senseNearbyRobots();
+
+        float dx = 0;
+        float dy = 0;
+
+        boolean firstEnemy = true;
+
+        for (int i = 0; i < robotInfos.length; i++) {
+            if (robotInfos[i].getTeam().equals(enemyTeam) && robotInfos[i].getType().canAttack()) {
+
+                if (firstEnemy) {
+                    dx = robotInfos[i].getLocation().directionTo(robotLocation).getDeltaX(rc.getType().strideRadius);
+                    dy = robotInfos[i].getLocation().directionTo(robotLocation).getDeltaY(rc.getType().strideRadius);
+                    firstEnemy = false;
+                } else {
+                    dx += robotInfos[i].getLocation().directionTo(robotLocation).getDeltaX(rc.getType().strideRadius);
+                    dy += robotInfos[i].getLocation().directionTo(robotLocation).getDeltaY(rc.getType().strideRadius);
+
+                    dx = dx / 2f;
+                    dy = dy / 2f;
+                }
+            }
+        }
+
+        if (firstEnemy)
+            return false;
+
+        Direction moveDir = new Direction(dx, dy);
+
+        if (rc.canMove(moveDir)) {
+            rc.move(moveDir);
+            return true;
+        }
+
+        return false;
+    }
 }

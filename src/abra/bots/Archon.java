@@ -33,8 +33,8 @@ public strictfp class Archon {
 
                 if (!moved) {
 
-                    if (previousDir != null)
-                        if (Utils.tryMove(previousDir, rc))
+                    if (previousDir == null)
+                        if (Utils.microAway(rc))
 
                     // try previous
                     // try random
