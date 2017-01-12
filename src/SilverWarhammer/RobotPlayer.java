@@ -119,16 +119,21 @@ public strictfp class RobotPlayer {
                 	
                 	else if(Math.round(Math.random())==1?true:false)
                 	{
-                		if( rc.canBuildRobot(RobotType.SCOUT, dir) )
+                		if( rc.canBuildRobot(RobotType.SCOUT, dir) && (UnitManager.getScouts()/(float)UnitManager.getTotalUnits())<.33)
                 			UnitManager.buildScout(rc,dir);
-                		else if( rc.canBuildRobot(RobotType.LUMBERJACK, dir) )
+                		else if( rc.canBuildRobot(RobotType.LUMBERJACK, dir) && (UnitManager.getScouts()/(float)UnitManager.getTotalUnits())<.4 )
                 			UnitManager.buildLumberjack(rc,dir);
                 	}
                 }
-         
+        
                 // Move randomly
                 tryMove(randomDirection());
 
+                if(rc.canPlantTree(dir) && rc.getTeamBullets()>100)
+                	rc.plantTree(dir);
+               TreeInfo[] trees=rc.senseNearbyTrees();
+                if(rc.canWater(trees[0].ID)) //try cycling through all nearby trees
+                	rc.water(trees[0].ID);
                 // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
                 Clock.yield();
 

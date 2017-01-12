@@ -89,6 +89,10 @@ public class Unit {
 	public int getLumberjacks() {return lumberjacks;}
 	public int getTanks() {return tanks;}
 	public int getScouts() {return scouts;}
+	public int getTotalUnits() 
+	{
+		return gardeners+soldiers+lumberjacks+tanks+scouts;
+	}
 }
 
 
