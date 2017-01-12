@@ -8,6 +8,7 @@ public class Unit {
     static int lumberjacks=0;
     static int tanks=0;
     static int scouts=0;
+    static int trees=0;
     
     public Unit()
     {}
@@ -83,7 +84,19 @@ public class Unit {
 		
 		 return false;
 	 }
-		 
+	
+	public boolean buildTree(RobotController rc, Direction dir) throws GameActionException
+	{
+		
+		if(rc.canPlantTree(dir))
+		{
+			rc.plantTree(dir);
+			trees++;
+			return true;
+		}
+		
+		return false;
+	}
 	public int getGardeners() { return gardeners;}
 	public int getSoldiers() {return soldiers;}
 	public int getLumberjacks() {return lumberjacks;}
@@ -93,6 +106,7 @@ public class Unit {
 	{
 		return gardeners+soldiers+lumberjacks+tanks+scouts;
 	}
+	public int getTrees(){return trees;}
 }
 
 

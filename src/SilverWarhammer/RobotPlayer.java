@@ -105,35 +105,45 @@ public strictfp class RobotPlayer {
                 // build soldiers in a 3:1 ratio to tanks, if neither should or can't be built, make a scout or lumberjack
                 if(UnitManager.getLumberjacks()<2)
                 	UnitManager.buildLumberjack(rc,dir);
-                else if (rc.canBuildRobot(RobotType.SOLDIER, dir) && 3*UnitManager.getTanks()>=UnitManager.getSoldiers()) 
-                    UnitManager.buildSoldier(rc, dir);
-                else if(rc.canBuildRobot(RobotType.TANK, dir) )
-                	UnitManager.buildTank(rc, dir);
+                if( UnitManager.getTrees()>2)
+                {
+	                if (rc.canBuildRobot(RobotType.SOLDIER, dir) && 3*UnitManager.getTanks()>=UnitManager.getSoldiers()) 
+	                    UnitManager.buildSoldier(rc, dir);
+	                else if(rc.canBuildRobot(RobotType.TANK, dir) )
+	                	UnitManager.buildTank(rc, dir);
+	                else
+	                {
+	                	if(UnitManager.getLumberjacks()<3)
+	                	{
+	                		if( rc.canBuildRobot(RobotType.LUMBERJACK, dir) )
+	                			UnitManager.buildLumberjack(rc, dir);
+	                	}
+	                	
+	                	else if(Math.round(Math.random())==1?true:false)
+	                	{
+	                		if( rc.canBuildRobot(RobotType.SCOUT, dir) && (UnitManager.getScouts()/(float)UnitManager.getTotalUnits())<.33)
+	                			UnitManager.buildScout(rc,dir);
+	                		else if( rc.canBuildRobot(RobotType.LUMBERJACK, dir) && (UnitManager.getScouts()/(float)UnitManager.getTotalUnits())<.4 )
+	                			UnitManager.buildLumberjack(rc,dir);
+	                	}
+	                	else if(Math.round(Math.random())==1?true:false && rc.getTeamBullets()>75)
+	                	{
+	                		UnitManager.buildTree(rc,dir);
+	                	}
+	                }
+                }
                 else
                 {
-                	if(UnitManager.getLumberjacks()<3)
-                	{
-                		if( rc.canBuildRobot(RobotType.LUMBERJACK, dir) )
-                			UnitManager.buildLumberjack(rc, dir);
-                	}
-                	
-                	else if(Math.round(Math.random())==1?true:false)
-                	{
-                		if( rc.canBuildRobot(RobotType.SCOUT, dir) && (UnitManager.getScouts()/(float)UnitManager.getTotalUnits())<.33)
-                			UnitManager.buildScout(rc,dir);
-                		else if( rc.canBuildRobot(RobotType.LUMBERJACK, dir) && (UnitManager.getScouts()/(float)UnitManager.getTotalUnits())<.4 )
-                			UnitManager.buildLumberjack(rc,dir);
-                	}
+                	UnitManager.buildTree(rc, dir);
                 }
-        
-                // Move randomly
-                tryMove(randomDirection());
-
-                if(rc.canPlantTree(dir) && rc.getTeamBullets()>100)
-                	rc.plantTree(dir);
+              
                TreeInfo[] trees=rc.senseNearbyTrees();
                 if(rc.canWater(trees[0].ID)) //try cycling through all nearby trees
                 	rc.water(trees[0].ID);
+                
+                // Move randomly
+                tryMove(randomDirection());
+
                 // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
                 Clock.yield();
 
