@@ -1,9 +1,11 @@
 package SilverWarhammer;
 import battlecode.common.*;
-import support.FieldInfo;;
+import support.FieldInfo;
+import support.Unit;;
 
 public strictfp class RobotPlayer {
     static RobotController rc;    
+    static Unit UnitManager = new Unit();
     static int gardeners=0;
     static int soldiers=0;
     static int lumberjacks=0;
@@ -101,54 +103,29 @@ public strictfp class RobotPlayer {
                 Direction dir = randomDirection();
 
                 // build soldiers in a 3:1 ratio to tanks, if neither should or can't be built, make a scout or lumberjack
-                if(lumberjacks<2)
-                {
-                	if( rc.canBuildRobot(RobotType.LUMBERJACK, dir) )
-                	{
-                		rc.buildRobot(RobotType.LUMBERJACK, dir);
-                		lumberjacks++;
-                	}
-            			
-                }
-                else if (rc.canBuildRobot(RobotType.SOLDIER, dir) && 3*tanks>=soldiers) {
-                    rc.buildRobot(RobotType.SOLDIER, dir);
-                    soldiers++;
-                }
+                if(UnitManager.getLumberjacks()<2)
+                	UnitManager.buildLumberjack(rc,dir);
+                else if (rc.canBuildRobot(RobotType.SOLDIER, dir) && 3*UnitManager.getTanks()>=UnitManager.getSoldiers()) 
+                    UnitManager.buildSoldier(rc, dir);
                 else if(rc.canBuildRobot(RobotType.TANK, dir) )
-                {
-                	rc.buildRobot(RobotType.TANK, dir);
-                	tanks++;
-                }
+                	UnitManager.buildTank(rc, dir);
                 else
                 {
-                	if(lumberjacks<3)
+                	if(UnitManager.getLumberjacks()<3)
                 	{
                 		if( rc.canBuildRobot(RobotType.LUMBERJACK, dir) )
-                		{
-                			rc.buildRobot(RobotType.LUMBERJACK, dir);
-                			lumberjacks++;
-                		}
-                			
+                			UnitManager.buildLumberjack(rc, dir);
                 	}
-                	if(Math.round(Math.random())==1?true:false)
+                	
+                	else if(Math.round(Math.random())==1?true:false)
                 	{
                 		if( rc.canBuildRobot(RobotType.SCOUT, dir) )
-                			{
-                				rc.buildRobot(RobotType.SCOUT, dir);
-                				scouts++;
-                			}
+                			UnitManager.buildScout(rc,dir);
                 		else if( rc.canBuildRobot(RobotType.LUMBERJACK, dir) )
-                		{
-                			rc.buildRobot(RobotType.LUMBERJACK, dir);
-                			lumberjacks++;
-                		}
-                			
+                			UnitManager.buildLumberjack(rc,dir);
                 	}
                 }
-              //  else if (rc.canBuildRobot(RobotType.LUMBERJACK, dir) && Math.random() < .01 && rc.isBuildReady()) {
-              //      rc.buildRobot(RobotType.LUMBERJACK, dir);
-              //  }
-
+         
                 // Move randomly
                 tryMove(randomDirection());
 
