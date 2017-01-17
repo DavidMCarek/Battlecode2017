@@ -6,47 +6,49 @@ import battlecode.common.*;
 public strictfp class Archon {
     public static void run(RobotController rc) {
 
+        Direction previousDir = null;
+        boolean moved = false;
+
         while (true) {
             try {
-
-                boolean randomMove = true;
 
                 BulletInfo[] bulletInfos = rc.senseNearbyBullets();
 
                 System.out.println(bulletInfos.length);
                 if (bulletInfos.length != 0) {
-                    randomMove = false;
 
                     for (int i = 0; i < bulletInfos.length; i++) {
-                        if (Utils.willCollideWithMe(bulletInfos[i], rc)) {
-                            if (rc.canMove(bulletInfos[i].dir.rotateLeftDegrees(90)))
-                                rc.move(bulletInfos[i].dir.rotateLeftDegrees(90));
+                        if (Utils.willCollideWithMe(bulletInfos[i], rc.getLocation(), rc.getType().bodyRadius)) {
 
-                            else if (rc.canMove(bulletInfos[i].dir.rotateRightDegrees(90)))
-                                rc.move(bulletInfos[i].dir.rotateRightDegrees(90));
+                            previousDir = Utils.trySafeMove(i, bulletInfos, 4, rc);
 
-                            else if (rc.canMove(bulletInfos[i].dir)){
-                                rc.move(bulletInfos[i].dir);
-                            }
-
-                            else {
-                                rc.move(bulletInfos[i].dir.opposite());
+                            if (previousDir != null) {
+                                moved = true;
+                                break;
                             }
                         }
                     }
 
                 }
 
+                if (!moved) {
 
-                BulletInfo[] nearbyBullets = rc.senseNearbyBullets();
+                    if (previousDir == null)
+                        if (Utils.microAway(rc))
+
+                    // try previous
+                    // try random
+                    Utils.tryMove(previousDir != null ? previousDir : Utils.randomDirection(), rc);
+
+                }
                 
                 int bullets = (int)rc.getTeamBullets();
 
                 if (rc.hasRobotBuildRequirements(RobotType.GARDENER))
-                    rc.buildRobot(RobotType.GARDENER, Utils.randomDirection());
+                    rc.buildRobot(RobotType.GARDENER, previousDir != null ? previousDir : Utils.randomDirection());
 
-                if (randomMove)
-                    rc.move(Utils.randomDirection());
+
+                moved = false;
 
                 Clock.yield();
 
