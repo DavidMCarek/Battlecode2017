@@ -65,7 +65,7 @@ public strictfp class RobotPlayer {
                     UnitManager.buildGardener(rc, dir);
                     
                 }
-                else if (rc.canHireGardener(dir) && Math.random()<.01)
+                else if (rc.canHireGardener(dir) && Math.random()<.01 && UnitManager.getGardeners()<3) //need to account for killed units
                 	UnitManager.buildGardener(rc,dir);
 
                 // Move randomly
