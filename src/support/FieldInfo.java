@@ -14,6 +14,7 @@ import battlecode.common.*;
 	  private float southMost=0;
 	  private TreeInfo trees[];
 	  
+	  
 	  public float[] getFieldSize()
 	  {
 		  //returns an array of the best know height and width of the field

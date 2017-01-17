@@ -61,11 +61,12 @@ public strictfp class RobotPlayer {
                 Direction dir = randomDirection();
 
                 // Randomly attempt to build a gardener in this direction
-                if (rc.canHireGardener(dir) && gardeners<10) {
-                    rc.hireGardener(dir);
-                    gardeners++;
+                if (rc.canHireGardener(dir) && gardeners<3) {
+                    UnitManager.buildGardener(rc, dir);
                     
                 }
+                else if (rc.canHireGardener(dir) && Math.random()<.01)
+                	UnitManager.buildGardener(rc,dir);
 
                 // Move randomly
                 tryMove(randomDirection());
@@ -98,19 +99,33 @@ public strictfp class RobotPlayer {
                 int xPos = rc.readBroadcast(0);
                 int yPos = rc.readBroadcast(1);
                 MapLocation archonLoc = new MapLocation(xPos,yPos);
+                
+                TreeInfo[] nearbyTrees=rc.senseNearbyTrees();
 
                 // Generate a random direction
                 Direction dir = randomDirection();
+                
+                if(nearbyTrees.length<1)
+                {
+                    // Move randomly
+                    tryMove(randomDirection());
 
+                }
+                if(nearbyTrees.length<2)
+                {
+                	UnitManager.buildTree(rc, dir);
+                	return;
+                }
+                
                 // build soldiers in a 3:1 ratio to tanks, if neither should or can't be built, make a scout or lumberjack
-                if(UnitManager.getLumberjacks()<2)
+                if(UnitManager.getLumberjacks()<3)
                 	UnitManager.buildLumberjack(rc,dir);
-                if( UnitManager.getTrees()>2)
+                if( UnitManager.getTrees()>3)
                 {
 	                if (rc.canBuildRobot(RobotType.SOLDIER, dir) && 3*UnitManager.getTanks()>=UnitManager.getSoldiers()) 
 	                    UnitManager.buildSoldier(rc, dir);
-	                else if(rc.canBuildRobot(RobotType.TANK, dir) )
-	                	UnitManager.buildTank(rc, dir);
+	                else if(rc.canBuildRobot(RobotType.SCOUT, dir) )
+	                	UnitManager.buildScout(rc, dir);
 	                else
 	                {
 	                	if(UnitManager.getLumberjacks()<3)
@@ -141,9 +156,6 @@ public strictfp class RobotPlayer {
                 if(rc.canWater(trees[0].ID)) //try cycling through all nearby trees
                 	rc.water(trees[0].ID);
                 
-                // Move randomly
-                tryMove(randomDirection());
-
                 // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
                 Clock.yield();
 
@@ -217,7 +229,7 @@ public strictfp class RobotPlayer {
     static void runLumberjack() throws GameActionException {
         System.out.println("I'm a lumberjack!");
         Team enemy = rc.getTeam().opponent();
-
+        
         // The code you want your robot to perform every round should be in this loop
         while (true) {
 
@@ -297,8 +309,21 @@ public strictfp class RobotPlayer {
     	{
     		try
     		{
+    			  // See if there are any nearby enemy robots
+    			Team enemy = rc.getTeam().opponent();
+                RobotInfo[] robots = rc.senseNearbyRobots(-1, enemy);
+
+                // If there are some...
+                if (robots.length > 0) {
+                    // And we have enough bullets, and haven't attacked yet this turn...
+                    if (rc.canFireSingleShot()) {
+                        // ...Then fire a bullet in the direction of the enemy.
+                        rc.fireSingleShot(rc.getLocation().directionTo(robots[0].location));
+                    }
+                    
     			tryMove(randomDirection());
     			Clock.yield();
+    		}
     		}
     		catch (Exception e)
     		{
