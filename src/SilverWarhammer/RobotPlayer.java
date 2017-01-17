@@ -108,25 +108,35 @@ public strictfp class RobotPlayer {
                 if(nearbyTrees.length<1)
                 {
                     // Move randomly
-                    tryMove(randomDirection());
+                  //  tryMove(randomDirection());
+                    UnitManager.buildTree(rc, dir);
 
                 }
-                if(nearbyTrees.length<2)
+                else if(nearbyTrees.length<2)
                 {
                 	UnitManager.buildTree(rc, dir);
-                	return;
+                	
+                }
+                else
+                {
+                	//if there are more than 2 trees nearby
+                	if(nearbyTrees.length>0 && rc.canWater(nearbyTrees[0].ID))
+                	{
+                		//be sure to check any nearby tree, not just one
+                		rc.water(nearbyTrees[0].ID);
+                	}
                 }
                 
-                // build soldiers in a 3:1 ratio to tanks, if neither should or can't be built, make a scout or lumberjack
-                if(UnitManager.getLumberjacks()<3)
-                	UnitManager.buildLumberjack(rc,dir);
-                if( UnitManager.getTrees()>3)
+                if(UnitManager.getLumberjacks()<3 && rc.getTreeCount()>=3)
+                	UnitManager.buildLumberjack(rc,dir); //build lumber jacks when there are more than 3 trees
+                
+                if( UnitManager.getTrees()>=3)
                 {
-	                if (rc.canBuildRobot(RobotType.SOLDIER, dir) && 3*UnitManager.getTanks()>=UnitManager.getSoldiers()) 
+	                if (rc.canBuildRobot(RobotType.SOLDIER, dir)) 
 	                    UnitManager.buildSoldier(rc, dir);
 	                else if(rc.canBuildRobot(RobotType.SCOUT, dir) )
 	                	UnitManager.buildScout(rc, dir);
-	                else
+	           /*     else
 	                {
 	                	if(UnitManager.getLumberjacks()<3)
 	                	{
@@ -145,16 +155,12 @@ public strictfp class RobotPlayer {
 	                	{
 	                		UnitManager.buildTree(rc,dir);
 	                	}
-	                }
+	                } */
                 }
                 else
                 {
-                	UnitManager.buildTree(rc, dir);
+                	//UnitManager.buildTree(rc, dir);
                 }
-              
-               TreeInfo[] trees=rc.senseNearbyTrees();
-                if(rc.canWater(trees[0].ID)) //try cycling through all nearby trees
-                	rc.water(trees[0].ID);
                 
                 // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
                 Clock.yield();
@@ -321,9 +327,12 @@ public strictfp class RobotPlayer {
                         rc.fireSingleShot(rc.getLocation().directionTo(robots[0].location));
                     }
                     
-    			tryMove(randomDirection());
+    			//tryMove(randomDirection());
+               // forceMove(rc);
+                
     			Clock.yield();
     		}
+                tryMove(randomDirection());
     		}
     		catch (Exception e)
     		{
@@ -338,6 +347,32 @@ public strictfp class RobotPlayer {
         return new Direction((float)Math.random() * 2 * (float)Math.PI);
     }
 
+    static boolean forceMove(RobotController rc) throws GameActionException
+    {
+    	//method does it's best to force a move
+    	/*
+    	 * divide a full circle (2pi) by incrementing values of i, and try each direction in that set
+    	 * example. i=3 try 2pi/3, 4pi/3, and 6pi/3
+    	 * 
+    	 * should remove last instance of each j loop since that should always be 2pi, which can be tried before 
+    	 * the loop as the initial random directions
+    	 */
+    	Direction dir=randomDirection();
+    	for(int i=1;i<10; i++)
+    	{
+    		for(int j=3;j<i;j++)
+    		{
+    			if(rc.canMove(new Direction((float) (dir.radians+(2*Math.PI/(i*j))) ) ) )
+    			{
+    				rc.move(new Direction((float) (dir.radians+(2*Math.PI/(i*j))) ) );
+    				return true;
+    			}
+    		}
+    	}
+    	
+    	return false;
+    	
+    }
     /**
      * Attempts to move in a given direction, while avoiding small obstacles directly in the path.
      *
