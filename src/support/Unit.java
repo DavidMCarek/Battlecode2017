@@ -9,6 +9,7 @@ public class Unit {
     static int tanks=0;
     static int scouts=0;
     static int trees=0;
+    static int[] unitTrees;
     
     public Unit()
     {}
