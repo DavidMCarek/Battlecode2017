@@ -1,6 +1,7 @@
 package abra;
 
 import battlecode.common.*;
+import battlecode.instrumenter.inject.ObjectHashCode;
 
 public strictfp class Utils {
     public static boolean willCollideWithMe(BulletInfo bullet, MapLocation location, float bodyRadius) {
@@ -16,7 +17,7 @@ public strictfp class Utils {
             return false;
         }
 
-        float perpendicularDist = (float)Math.abs(distToRobot * Math.sin(theta)); // soh cah toa :)
+        float perpendicularDist = (float)Math.abs(distToRobot * Math.sin(theta));
 
         return (perpendicularDist <= bodyRadius);
     }
@@ -58,12 +59,15 @@ public strictfp class Utils {
 
     public static boolean tryBuild(Direction dir, int steps, RobotType robotType, boolean moving, RobotController rc) throws GameActionException {
 
-        if (steps == 0)
-            return false;
-
         float stepSize = 360f / steps;
 
         for (int i = 1; i <= steps; i++) {
+            if (i % 2 == 0) {
+                dir = dir.rotateLeftDegrees(i * stepSize);
+            } else {
+                dir = dir.rotateRightDegrees(i * stepSize);
+            }
+
             if (rc.canBuildRobot(robotType, dir.rotateRightDegrees(i * stepSize))) {
                 if (i == steps && moving)
                     return  false;
@@ -75,32 +79,47 @@ public strictfp class Utils {
         return false;
     }
 
-    public static Direction trySafeMove(int collisionBullet, BulletInfo[] nearbyBullets, int steps, RobotController rc) throws GameActionException {
+    public static boolean trySafeMove(Direction preferredDir, int collisionBullet, BulletInfo[] nearbyBullets, int steps, RobotController rc) throws GameActionException {
 
         MapLocation currentLocation = rc.getLocation();
-
-        if (steps == 0)
-            return null;
 
         float stepSize = 360f / steps;
 
         Direction dir = nearbyBullets[collisionBullet].dir;
 
-        dir = dir.rotateRightDegrees(90);
-
         for (int i = 1; i <= steps; i++) {
+            if (i % 2 == 0) {
+                dir = dir.rotateLeftDegrees(i * stepSize);
+            } else {
+                dir = dir.rotateRightDegrees(i * stepSize);
+            }
+
             for (int j = 0; j < nearbyBullets.length; j++)
                 if (!willCollideWithMe(nearbyBullets[j], currentLocation.add(dir), rc.getType().bodyRadius) && rc.canMove(dir)) {
                     rc.move(dir);
-                    return dir;
+                    preferredDir = dir;
+                    return true;
                 }
-            dir = dir.rotateLeftDegrees(stepSize);
+
         }
 
-        return null;
+        return false;
     }
 
-    public static boolean microAway(RobotController rc) throws GameActionException {
+    public static boolean avoidBullets(Direction preferredDir, RobotController rc) throws GameActionException {
+        BulletInfo[] nearbyBullets = rc.senseNearbyBullets();
+
+        for (int i = 0; i < nearbyBullets.length; i++) {
+            if (Utils.willCollideWithMe(nearbyBullets[i], rc.getLocation(), rc.getType().bodyRadius)) {
+                if (trySafeMove(preferredDir, i, nearbyBullets, 8, rc))
+                    return true;
+            }
+        }
+
+        return  false;
+    }
+
+    public static boolean microAway(Direction preferredDir, RobotController rc) throws GameActionException {
 
         MapLocation robotLocation = rc.getLocation();
 
@@ -137,7 +156,29 @@ public strictfp class Utils {
 
         if (rc.canMove(moveDir)) {
             rc.move(moveDir);
+            preferredDir = moveDir;
             return true;
+        }
+
+        return false;
+    }
+
+    public static boolean preferredMove(Direction dir, int steps, RobotController rc) throws GameActionException {
+
+        float stepSize = 360f / steps;
+
+        for (int i = 1; i <= steps; i++) {
+            if (i % 2 == 0) {
+                dir = dir.rotateLeftDegrees(i * stepSize);
+            } else {
+                dir = dir.rotateRightDegrees(i * stepSize);
+            }
+
+            if (rc.canMove(dir)) {
+                rc.move(dir);
+                return true;
+            }
+
         }
 
         return false;
