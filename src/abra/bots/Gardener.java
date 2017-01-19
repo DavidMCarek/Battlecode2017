@@ -5,12 +5,24 @@ import battlecode.common.*;
 
 public strictfp class Gardener {
     public static void run(RobotController rc) {
+
+        int turnCount = 1;
+        Direction preferredDir = null;
+
         while (true) {
             try {
 
-                int xPos = rc.readBroadcast(0);
-                int yPos = rc.readBroadcast(1);
-                MapLocation archonLoc = new MapLocation(xPos,yPos);
+                if (turnCount > 10) {
+                    TreeInfo[] trees = rc.senseNearbyTrees();
+                    if (trees.length > 2) {
+                        // build robots
+
+                        // water trees
+                    } else {
+
+                        // build more trees
+                    }
+                }
 
                 Direction dir = Utils.randomDirection();
 
@@ -21,6 +33,8 @@ public strictfp class Gardener {
                 }
 
                 Utils.tryMove(Utils.randomDirection(), rc);
+
+                turnCount++;
 
                 Clock.yield();
             }catch (Exception e) {

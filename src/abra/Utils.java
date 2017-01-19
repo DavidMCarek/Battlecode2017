@@ -1,7 +1,6 @@
 package abra;
 
 import battlecode.common.*;
-import battlecode.instrumenter.inject.ObjectHashCode;
 
 public strictfp class Utils {
     public static boolean willCollideWithMe(BulletInfo bullet, MapLocation location, float bodyRadius) {
@@ -37,17 +36,18 @@ public strictfp class Utils {
             return true;
         }
 
-        boolean moved = false;
         int currentCheck = 1;
 
         while(currentCheck<=checksPerSide) {
             if(rc.canMove(dir.rotateLeftDegrees(degreeOffset*currentCheck))) {
-                rc.move(dir.rotateLeftDegrees(degreeOffset*currentCheck));
+                dir = dir.rotateLeftDegrees(degreeOffset*currentCheck);
+                rc.move(dir);
                 return true;
             }
 
             if(rc.canMove(dir.rotateRightDegrees(degreeOffset*currentCheck))) {
-                rc.move(dir.rotateRightDegrees(degreeOffset*currentCheck));
+                dir = dir.rotateRightDegrees(degreeOffset*currentCheck);
+                rc.move(dir);
                 return true;
             }
 
@@ -57,23 +57,31 @@ public strictfp class Utils {
         return false;
     }
 
-    public static boolean tryBuild(Direction dir, int steps, RobotType robotType, boolean moving, RobotController rc) throws GameActionException {
+    public static boolean tryBuild(Direction dir, RobotType robotType, RobotController rc) throws GameActionException {
+        return tryBuild(dir, 3, 20, robotType, rc);
+    }
 
-        float stepSize = 360f / steps;
+    public static boolean tryBuild(Direction dir, int checksPerSide, float degreeOffset, RobotType robotType, RobotController rc) throws GameActionException {
 
-        for (int i = 1; i <= steps; i++) {
-            if (i % 2 == 0) {
-                dir = dir.rotateLeftDegrees(i * stepSize);
-            } else {
-                dir = dir.rotateRightDegrees(i * stepSize);
-            }
+        if (rc.canBuildRobot(robotType, dir)) {
+            rc.buildRobot(robotType, dir);
+            return true;
+        }
 
-            if (rc.canBuildRobot(robotType, dir.rotateRightDegrees(i * stepSize))) {
-                if (i == steps && moving)
-                    return  false;
-                rc.buildRobot(robotType, dir.rotateRightDegrees(i * stepSize));
+        int currentCheck = 1;
+
+        while(currentCheck<=checksPerSide) {
+            if(rc.canBuildRobot(robotType, dir.rotateLeftDegrees(degreeOffset*currentCheck))) {
+                rc.buildRobot(robotType, dir.rotateLeftDegrees(degreeOffset*currentCheck));
                 return true;
             }
+
+            if(rc.canBuildRobot(robotType, dir.rotateRightDegrees(degreeOffset*currentCheck))) {
+                rc.buildRobot(robotType, dir.rotateRightDegrees(degreeOffset*currentCheck));
+                return true;
+            }
+
+            currentCheck++;
         }
 
         return false;
@@ -163,24 +171,4 @@ public strictfp class Utils {
         return false;
     }
 
-    public static boolean preferredMove(Direction dir, int steps, RobotController rc) throws GameActionException {
-
-        float stepSize = 360f / steps;
-
-        for (int i = 1; i <= steps; i++) {
-            if (i % 2 == 0) {
-                dir = dir.rotateLeftDegrees(i * stepSize);
-            } else {
-                dir = dir.rotateRightDegrees(i * stepSize);
-            }
-
-            if (rc.canMove(dir)) {
-                rc.move(dir);
-                return true;
-            }
-
-        }
-
-        return false;
-    }
 }

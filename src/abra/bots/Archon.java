@@ -20,15 +20,19 @@ public strictfp class Archon {
                     if (Utils.microAway(preferredDir, rc))
                         moved = true;
 
-                    else if (Utils.preferredMove(preferredDir != null ? preferredDir : Utils.randomDirection(), 8, rc)) {
+                    else if (Utils.tryMove(preferredDir != null ? preferredDir : Utils.randomDirection(), rc)) {
                         moved = true;
                     }
                 }
 
+                if (rc.hasRobotBuildRequirements(RobotType.GARDENER) && rc.getRobotCount() < 20) {
+                    if (moved)
+                        Utils.tryBuild(preferredDir != null ? preferredDir.opposite() : Utils.randomDirection(), RobotType.GARDENER, rc);
+                    else
+                        Utils.tryBuild(preferredDir != null ? preferredDir.opposite() : Utils.randomDirection(), 9, 20, RobotType.GARDENER, rc);
+                }
+
                 moved = false;
-
-                Utils.tryBuild(preferredDir != null ? preferredDir.opposite() : Utils.randomDirection(), 8, RobotType.GARDENER, moved, rc);
-
                 Clock.yield();
 
 
@@ -37,9 +41,5 @@ public strictfp class Archon {
                 e.printStackTrace();
             }
         }
-    }
-
-    private void tryBuild(RobotController rc) {
-        if (rc.canBuildRobot(RobotType.GARDENER, Direction.getEast()));
     }
 }
