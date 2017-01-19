@@ -19,7 +19,9 @@ public strictfp class Gardener {
 
                         // water trees
                     } else {
+                        if (rc.hasTreeBuildRequirements()) {
 
+                        }
                         // build more trees
                     }
                 }
@@ -42,5 +44,28 @@ public strictfp class Gardener {
                 e.printStackTrace();
             }
         }
+    }
+
+    private static boolean tryBuild(float degreeOffset, RobotController rc) throws GameActionException {
+
+//        int currentCheck = 1;
+//        int checksPerSide = 3;
+//        float degreeOffset = 45;
+//
+//        while(currentCheck<=checksPerSide) {
+//            if(rc.canPlantTree(dir.rotateLeftDegrees(degreeOffset*currentCheck))) {
+//                rc.plantTree(dir.rotateLeftDegrees(degreeOffset*currentCheck));
+//                return true;
+//            }
+//
+//            if(rc.canBuildRobot(robotType, dir.rotateRightDegrees(degreeOffset*currentCheck))) {
+//                rc.buildRobot(robotType, dir.rotateRightDegrees(degreeOffset*currentCheck));
+//                return true;
+//            }
+//
+//            currentCheck++;
+//        }
+
+        return false;
     }
 }
