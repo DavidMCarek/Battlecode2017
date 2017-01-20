@@ -4,25 +4,43 @@ import abra.Utils;
 import battlecode.common.*;
 
 public strictfp class Gardener {
+
+    private static int lumberjacks = 0;
+    private static int scouts = 0;
+    private static int soldiers = 0;
+    private static int tanks = 0;
+
     public static void run(RobotController rc) {
 
         int turnCount = 1;
+        int cooldown = 0;
         Direction preferredDir = null;
+
+        RobotType buildType = RobotType.SCOUT;
 
         while (true) {
             try {
 
-                if (turnCount > 10) {
-                    TreeInfo[] trees = rc.senseNearbyTrees();
-                    if (trees.length > 2) {
-                        // build robots
+                if (turnCount > 5) {
+                    TreeInfo[] trees = rc.senseNearbyTrees(3f);
 
-                        // water trees
+
+                    if (trees.length > 3) {
+
+                        if (cooldown < 1 && Utils.tryBuild(Direction.getNorth(), unitToBuild(), rc))
+                            cooldown = 10;
+
+                        rc.water(0);
+
+
+                        if (rc.hasTreeBuildRequirements()) {
+                            tryBuild(rc);
+                        }
+
                     } else {
                         if (rc.hasTreeBuildRequirements()) {
-
+                            tryBuild(rc);
                         }
-                        // build more trees
                     }
                 }
 
@@ -37,6 +55,7 @@ public strictfp class Gardener {
                 Utils.tryMove(Utils.randomDirection(), rc);
 
                 turnCount++;
+                cooldown--;
 
                 Clock.yield();
             }catch (Exception e) {
@@ -46,25 +65,50 @@ public strictfp class Gardener {
         }
     }
 
-    private static boolean tryBuild(float degreeOffset, RobotController rc) throws GameActionException {
+    private static boolean tryWater() {
 
-//        int currentCheck = 1;
-//        int checksPerSide = 3;
-//        float degreeOffset = 45;
-//
-//        while(currentCheck<=checksPerSide) {
-//            if(rc.canPlantTree(dir.rotateLeftDegrees(degreeOffset*currentCheck))) {
-//                rc.plantTree(dir.rotateLeftDegrees(degreeOffset*currentCheck));
-//                return true;
-//            }
-//
-//            if(rc.canBuildRobot(robotType, dir.rotateRightDegrees(degreeOffset*currentCheck))) {
-//                rc.buildRobot(robotType, dir.rotateRightDegrees(degreeOffset*currentCheck));
-//                return true;
-//            }
-//
-//            currentCheck++;
-//        }
+        return false;
+    }
+
+    private static RobotType unitToBuild() {
+
+        if (scouts + lumberjacks < 10) {
+            if (scouts < lumberjacks)
+                return RobotType.SCOUT;
+            else
+                return RobotType.LUMBERJACK;
+        } else {
+            if (scouts + lumberjacks > 5 * soldiers) {
+                return RobotType.SOLDIER;
+            } else {
+                if (scouts < lumberjacks)
+                    return RobotType.SCOUT;
+                else
+                    return RobotType.LUMBERJACK;
+            }
+        }
+    }
+
+    private static boolean tryBuild(RobotController rc) throws GameActionException {
+
+        Direction dir = Direction.getNorth();
+
+        if (rc.canPlantTree(dir.rotateRightDegrees(60))) {
+            rc.plantTree(dir.rotateRightDegrees(60));
+            return true;
+        } else if (rc.canPlantTree(dir.rotateRightDegrees(120))) {
+            rc.plantTree(dir.rotateRightDegrees(180));
+            return true;
+        } else if (rc.canPlantTree((dir.opposite()))) {
+            rc.plantTree(dir.opposite());
+            return true;
+        } else if (rc.canPlantTree(dir.rotateLeftDegrees(120))) {
+            rc.plantTree(dir.rotateLeftDegrees(120));
+            return true;
+        } else if (rc.canPlantTree(dir.rotateLeftDegrees(60))) {
+            rc.plantTree(dir.rotateLeftDegrees(60));
+            return true;
+        }
 
         return false;
     }

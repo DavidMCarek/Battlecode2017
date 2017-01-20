@@ -25,15 +25,15 @@ public strictfp class Utils {
         return new Direction((float)Math.random() * 2 * (float)Math.PI);
     }
 
-    public static boolean tryMove(Direction dir, RobotController rc) throws GameActionException {
-        return tryMove(dir,20,3, rc);
+    public static Direction tryMove(Direction dir, RobotController rc) throws GameActionException {
+        return tryMove(dir, 15, 6, rc);
     }
 
-    public static boolean tryMove(Direction dir, float degreeOffset, int checksPerSide, RobotController rc) throws GameActionException {
+    public static Direction tryMove(Direction dir, float degreeOffset, int checksPerSide, RobotController rc) throws GameActionException {
 
         if (rc.canMove(dir)) {
             rc.move(dir);
-            return true;
+            return dir;
         }
 
         int currentCheck = 1;
@@ -42,23 +42,23 @@ public strictfp class Utils {
             if(rc.canMove(dir.rotateLeftDegrees(degreeOffset*currentCheck))) {
                 dir = dir.rotateLeftDegrees(degreeOffset*currentCheck);
                 rc.move(dir);
-                return true;
+                return dir;
             }
 
             if(rc.canMove(dir.rotateRightDegrees(degreeOffset*currentCheck))) {
                 dir = dir.rotateRightDegrees(degreeOffset*currentCheck);
                 rc.move(dir);
-                return true;
+                return dir;
             }
 
             currentCheck++;
         }
 
-        return false;
+        return null;
     }
 
     public static boolean tryBuild(Direction dir, RobotType robotType, RobotController rc) throws GameActionException {
-        return tryBuild(dir, 3, 20, robotType, rc);
+        return tryBuild(dir, 3, 30, robotType, rc);
     }
 
     public static boolean tryBuild(Direction dir, int checksPerSide, float degreeOffset, RobotType robotType, RobotController rc) throws GameActionException {
@@ -87,47 +87,85 @@ public strictfp class Utils {
         return false;
     }
 
-    public static boolean trySafeMove(Direction preferredDir, int collisionBullet, BulletInfo[] nearbyBullets, int steps, RobotController rc) throws GameActionException {
-
-        MapLocation currentLocation = rc.getLocation();
-
-        float stepSize = 360f / steps;
-
-        Direction dir = nearbyBullets[collisionBullet].dir;
-
-        for (int i = 1; i <= steps; i++) {
-            if (i % 2 == 0) {
-                dir = dir.rotateLeftDegrees(i * stepSize);
-            } else {
-                dir = dir.rotateRightDegrees(i * stepSize);
-            }
-
-            for (int j = 0; j < nearbyBullets.length; j++)
-                if (!willCollideWithMe(nearbyBullets[j], currentLocation.add(dir), rc.getType().bodyRadius) && rc.canMove(dir)) {
-                    rc.move(dir);
-                    preferredDir = dir;
-                    return true;
-                }
-
-        }
-
-        return false;
+    public static Direction trySafeMove(Direction preferredDir, RobotController rc) throws GameActionException {
+        return trySafeMove(preferredDir, rc.senseNearbyBullets(), 5, 30, rc);
     }
 
-    public static boolean avoidBullets(Direction preferredDir, RobotController rc) throws GameActionException {
+    public static Direction trySafeMove(Direction dir, BulletInfo[] nearbyBullets, int checksPerSide, float degreeOffset, RobotController rc) throws GameActionException {
+
+        MapLocation currentLocation = rc.getLocation();
+        boolean collision = false;
+
+        if (rc.canMove(dir)) {
+            for (int i = 0; i < nearbyBullets.length; i++)
+                if (willCollideWithMe(nearbyBullets[i], currentLocation.add(dir), rc.getType().bodyRadius)) {
+                    collision = true;
+                    break;
+                }
+
+            if (!collision) {
+                rc.move(dir);
+                return dir;
+            }
+        }
+
+        int currentCheck = 1;
+
+        while(currentCheck<=checksPerSide) {
+            collision = false;
+            if(rc.canMove(dir.rotateLeftDegrees(degreeOffset*currentCheck))) {
+                for (int i = 0; i < nearbyBullets.length; i++)
+                    if (willCollideWithMe(nearbyBullets[i], currentLocation.add(dir.rotateLeftDegrees(degreeOffset*currentCheck)), rc.getType().bodyRadius)) {
+                        collision = true;
+                        break;
+                    }
+
+                if (!collision) {
+                    dir = dir.rotateLeftDegrees(degreeOffset*currentCheck);
+                    rc.move(dir);
+                    return dir;
+                }
+            }
+
+            collision = false;
+
+            if(rc.canMove(dir.rotateRightDegrees(degreeOffset*currentCheck))) {
+
+                for (int i = 0; i < nearbyBullets.length; i++)
+                    if (willCollideWithMe(nearbyBullets[i], currentLocation.add(dir.rotateRightDegrees(degreeOffset*currentCheck)), rc.getType().bodyRadius)) {
+                        collision = true;
+                        break;
+                    }
+
+                if (!collision) {
+                    dir = dir.rotateRightDegrees(degreeOffset*currentCheck);
+                    rc.move(dir);
+                    return dir;
+                }
+            }
+
+            currentCheck++;
+        }
+
+        return null;
+    }
+
+    public static Direction avoidBullets(Direction preferredDir, RobotController rc) throws GameActionException {
         BulletInfo[] nearbyBullets = rc.senseNearbyBullets();
+        Direction tempDir = null;
 
         for (int i = 0; i < nearbyBullets.length; i++) {
             if (Utils.willCollideWithMe(nearbyBullets[i], rc.getLocation(), rc.getType().bodyRadius)) {
-                if (trySafeMove(preferredDir, i, nearbyBullets, 8, rc))
-                    return true;
+                tempDir = trySafeMove(preferredDir, rc);
+                if (tempDir != null)
+                    return tempDir;
             }
         }
 
-        return  false;
+        return null;
     }
 
-    public static boolean microAway(Direction preferredDir, RobotController rc) throws GameActionException {
+    public static Direction microAway(RobotController rc) throws GameActionException {
 
         MapLocation robotLocation = rc.getLocation();
 
@@ -158,17 +196,16 @@ public strictfp class Utils {
         }
 
         if (firstEnemy)
-            return false;
+            return null;
 
         Direction moveDir = new Direction(dx, dy);
 
         if (rc.canMove(moveDir)) {
             rc.move(moveDir);
-            preferredDir = moveDir;
-            return true;
+            return moveDir;
         }
 
-        return false;
+        return null;
     }
 
 }

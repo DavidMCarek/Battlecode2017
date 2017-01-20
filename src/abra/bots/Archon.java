@@ -6,32 +6,49 @@ import battlecode.common.*;
 public strictfp class Archon {
     public static void run(RobotController rc) {
 
-        Direction preferredDir = null;
+        Direction preferredDir = Utils.randomDirection();
+        Direction tempDir = null;
         boolean moved = false;
+
+        int cooldown = 0;
 
         while (true) {
             try {
 
-                // preferredDir gets set in the avoid bullet method if robot moves
-                if (Utils.avoidBullets(preferredDir != null ? preferredDir : Utils.randomDirection(), rc))
+                tempDir = Utils.avoidBullets(preferredDir, rc);
+                if (tempDir != null) {
+                    preferredDir = tempDir;
                     moved = true;
+                }
 
                 if (!moved) {
-                    if (Utils.microAway(preferredDir, rc))
+                    tempDir = Utils.microAway(rc);
+                    if (tempDir != null) {
                         moved = true;
-
-                    else if (Utils.tryMove(preferredDir != null ? preferredDir : Utils.randomDirection(), rc)) {
-                        moved = true;
+                        preferredDir = tempDir;
                     }
                 }
 
-                if (rc.hasRobotBuildRequirements(RobotType.GARDENER) && rc.getRobotCount() < 20) {
-                    if (moved)
-                        Utils.tryBuild(preferredDir != null ? preferredDir.opposite() : Utils.randomDirection(), RobotType.GARDENER, rc);
-                    else
-                        Utils.tryBuild(preferredDir != null ? preferredDir.opposite() : Utils.randomDirection(), 9, 20, RobotType.GARDENER, rc);
+                if (!moved) {
+                    tempDir = Utils.tryMove(preferredDir, rc);
+                    if (tempDir != null) {
+                        moved = true;
+                        preferredDir = tempDir;
+                    }
                 }
 
+                if (rc.hasRobotBuildRequirements(RobotType.GARDENER) && cooldown < 1) {
+                    if (moved)
+                        if (Utils.tryBuild(preferredDir.opposite(), RobotType.GARDENER, rc)) {
+                            cooldown = 15;
+                        }
+                    else
+                        if (Utils.tryBuild(preferredDir.opposite(), 9, 20, RobotType.GARDENER, rc)) {
+                            cooldown = 15;
+                        }
+                }
+
+                cooldown--;
                 moved = false;
                 Clock.yield();
 
