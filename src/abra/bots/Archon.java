@@ -9,6 +9,9 @@ public strictfp class Archon {
         Direction preferredDir = Utils.randomDirection();
         Direction tempDir = null;
         boolean moved = false;
+        int stuckCount = 0;
+        int gardenerCount = 0;
+        int defaultCooldown = 15;
 
         int cooldown = 0;
 
@@ -37,21 +40,40 @@ public strictfp class Archon {
                     }
                 }
 
+                if (!moved && stuckCount > 5) {
+                    tempDir = Utils.tryMove(preferredDir, 5, 36, rc);
+                    if (tempDir != null) {
+                        moved = true;
+                        preferredDir = tempDir;
+                    }
+                }
+
                 if (rc.hasRobotBuildRequirements(RobotType.GARDENER) && cooldown < 1) {
                     if (moved)
                         if (Utils.tryBuild(preferredDir.opposite(), RobotType.GARDENER, rc)) {
-                            cooldown = 15;
+                            cooldown = defaultCooldown + (2 * gardenerCount);
+                            gardenerCount++;
                         }
                     else
                         if (Utils.tryBuild(preferredDir.opposite(), 9, 20, RobotType.GARDENER, rc)) {
-                            cooldown = 15;
+                            cooldown = defaultCooldown + (2 * gardenerCount);
+                            gardenerCount++;
                         }
+                }
+
+                if (!moved) {
+                    stuckCount++;
+                } else {
+                    stuckCount = 0;
+                }
+
+                if (gardenerCount > 30) {
+                    defaultCooldown = 3000;
                 }
 
                 cooldown--;
                 moved = false;
                 Clock.yield();
-
 
             } catch (Exception e) {
                 System.out.println("Archon Exception");
