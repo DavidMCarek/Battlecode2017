@@ -51,7 +51,7 @@ public class communication {
 		{
 			//return 1 for good, 0 for low. and operation with bit 4
 			int data=rc.readBroadcast(index);
-			return (data & 0x10000000) == 1?true:false;
+			return getBitAt(data,31-4);
 					
 		}
 	
@@ -59,16 +59,23 @@ public class communication {
 	{
 		//and operation with bit 5
 		int data=rc.readBroadcast(index);
-		return (data & 0x08000000) == 1?true:false;
+		return getBitAt(data,31-5);
 	}
 	
 	public boolean isMobile(int index,RobotController rc) throws GameActionException
 	{
 		//and operation with bit 6
 		int data=rc.readBroadcast(index);
-		return (data & 0x04000000) == 1?true:false;
+		return getBitAt(data,31-6);
 	}
 	
+	public static boolean getBitAt(int value, int bitPosistion)
+	{
+		//return the bit at bitPosistion for the integer value
+		int pow=(int) Math.pow(2, Math.abs(bitPosistion)); 
+		return (value & pow) == pow?true:false;
+	}
+
 	public int getFormationID(int index,RobotController rc) throws GameActionException
 	{
 		int data=rc.readBroadcast(index);
