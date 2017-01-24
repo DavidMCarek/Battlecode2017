@@ -76,33 +76,38 @@ public class communication {
 		return (value & pow) == pow?true:false;
 	}
 
+	public static int getIntFromBitRange(int value, int start, int end )
+	{
+		int id=0;
+		
+		if(start>end)
+		{
+			int temp=start;
+			start=end;
+			end=temp;
+		}
+		
+		if(end-start>32)
+			return -1;
+		
+		int counter=0;
+		
+		for(int i=end;i>=start;i--)
+		{
+			if(getBitAt(value,31-i))
+				id+=(int)Math.pow(2,counter );
+			
+			System.out.println("id: "+id);
+			counter++;
+		}
+		
+		return id;
+	}
+	
 	public int getFormationID(int index,RobotController rc) throws GameActionException
 	{
 		int data=rc.readBroadcast(index);
-		int id=0;
-		
-		if((data & 0x01000000) == 1 ? true:false)
-			id ^= 0x01000000;
-		
-		if((data & 0x00800000) == 1 ? true:false)
-			id ^= 0x00800000;
-		
-		if((data & 0x00400000) == 1 ? true:false)
-			id ^= 0x00400000;
-		
-		if((data & 0x00200000) == 1 ? true:false)
-			id ^= 0x00200000;
-		
-		if((data & 0x00100000) == 1 ? true:false)
-			id ^= 0x00100000;
-		
-		if((data & 0x00080000) == 1 ? true:false)
-			id ^= 0x00080000;
-			
-		if((data & 0x00040000) == 1 ? true:false)
-			id ^= 0x00040000;
-		
-		return id;
+		return getIntFromBitRange(data,7,13);
 		
 	}
 	
