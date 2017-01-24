@@ -1,7 +1,7 @@
 package SilverWarhammer;
 import battlecode.common.*;
-import support.FieldInfo;
-import support.Unit;;
+//import support.FieldInfo;
+import support.Unit;
 
 public strictfp class RobotPlayer {
     static RobotController rc;    
@@ -11,7 +11,7 @@ public strictfp class RobotPlayer {
     static int lumberjacks=0;
     static int tanks=0;
     static int scouts=0;
-    static FieldInfo field=new FieldInfo();
+  // static FieldInfo field=new FieldInfo();
  
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
