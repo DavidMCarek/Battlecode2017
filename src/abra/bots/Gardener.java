@@ -13,6 +13,7 @@ public strictfp class Gardener {
     public static void run(RobotController rc) {
 
         int cooldown = 0;
+        int treeCooldown = 0;
         Direction buildDir = Utils.randomDirection();
         Direction preferredDir = Utils.randomDirection();
         Direction tempDir = null;
@@ -31,11 +32,13 @@ public strictfp class Gardener {
                     if (wateringTree < trees.length && trees.length > 0 && rc.canWater(trees[wateringTree].getLocation()))
                         rc.water(trees[wateringTree].getLocation());
 
-                    if (trees.length < 5)
-                        tryBuildTree(buildDir, rc);
+                    if ((treeCooldown < 1) && (trees.length < 5) && tryBuildTree(buildDir, rc)) {
+                        treeCooldown = 15 + (3 * trees.length);
+
+                    }
 
                     if (cooldown < 1 && rc.hasRobotBuildRequirements(buildType)) {
-                        if (Utils.tryBuild(preferredDir.opposite(), buildType, rc)) {
+                        if (Utils.tryBuild(buildDir, buildType, rc)) {
 
                             if (buildType.equals(RobotType.LUMBERJACK))
                                 lumberjacks++;
@@ -50,8 +53,6 @@ public strictfp class Gardener {
                             buildType = unitToBuild();
                         }
                     }
-
-
                 } else {
                     MapLocation currentLoc = rc.getLocation();
 
@@ -73,14 +74,14 @@ public strictfp class Gardener {
                             nearbyGardener = true;
                     }
 
-                    if (!nearbyGardener &&
-                            ((!rc.isCircleOccupiedExceptByThisRobot(currentLoc, 4f)
-                                    && rc.onTheMap(currentLoc, 3.5f))
-                            || cooldown < -30))
+                    if (!nearbyGardener && rc.onTheMap(currentLoc, 3.5f) &&
+                            ((!rc.isCircleOccupiedExceptByThisRobot(currentLoc, 4f))
+                            || cooldown < -20))
                         settled = true;
                 }
 
                 cooldown--;
+                treeCooldown--;
                 wateringTree = (wateringTree + 1) % 5;
 
                 Clock.yield();
