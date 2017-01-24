@@ -56,9 +56,54 @@ public class communication {
 		//encode bits 18-20 for formation type
 		data=appendFormationType(data,getFormationType(rc.getID(),rc));
 		
+		updateLocation(rc);
+		rc.broadcast(rc.getID(), data);
+		
 		
 	}
 
+	public void updateUnit(RobotController rc, boolean health, boolean mobile, boolean shotsFired,int formationID,int formationPosistion, int formationType) throws GameActionException
+	{
+		int data=0;
+		
+		//encode type in the first 3 (MSB) bits
+		data+=getUnitTypeValue(rc)<<28;
+		
+		//encode bit 4 for health
+		if(health)
+			data^=0x10000000; 
+		
+		//encode bit 5 for fired shot
+		if(shotsFired)
+			data^=0x08000000;
+		
+		//encode 6 for mobile
+		if(mobile)
+			data^=0x00800000;
+		
+		//encode bits 7-13 for formation id (shift 18)
+		data=appendFormationID(data,formationID);
+		
+		//encode bits 14-17 for position in formation
+		data=appendPosistionInFormation(data,formationPosistion);
+		
+		//encode bits 18-20 for formation type
+		data=appendFormationType(data,formationType);
+		
+		rc.broadcast(rc.getID(), data);
+		updateLocation(rc);
+	}
+	
+	public void updateLocation(RobotController rc,int index,int location) throws GameActionException
+	{
+		rc.broadcast(index%2000+3000, location);
+	}
+	
+	public void updateLocation(RobotController rc) throws GameActionException
+	{
+		updateLocation(rc,rc.getID(),convertLocationToInt(rc.getLocation().x,rc.getLocation().y));
+	}
+	
 	public int appendFormationID(int data, int formationID)
 	{
 		return data;
@@ -195,6 +240,10 @@ public class communication {
 		return ((float)getIntFromBitRange(location,16,31));
 	}
 	
+	public int convertLocationToInt(float x,float y)
+	{
+		return (int)x+(int)y;
+	}
 	
 }
 	
