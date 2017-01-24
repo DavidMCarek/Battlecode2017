@@ -94,17 +94,17 @@ public strictfp class Gardener {
 
     private static RobotType unitToBuild() {
 
-        if (scouts + lumberjacks < 10) {
-            if (scouts < lumberjacks)
-                return RobotType.SCOUT;
+        if (soldiers + lumberjacks < 10) {
+            if (soldiers < lumberjacks)
+                return RobotType.SOLDIER;
             else
                 return RobotType.LUMBERJACK;
         } else {
-            if (scouts + lumberjacks > 5 * soldiers) {
-                return RobotType.SOLDIER;
+            if (soldiers + lumberjacks > 3 * scouts) {
+                return RobotType.SCOUT;
             } else {
-                if (scouts < lumberjacks)
-                    return RobotType.SCOUT;
+                if (soldiers < lumberjacks)
+                    return RobotType.SOLDIER;
                 else
                     return RobotType.LUMBERJACK;
             }
