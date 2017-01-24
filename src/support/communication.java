@@ -38,11 +38,15 @@ public class communication {
 	{
 		//get the int from the broadcast for the associated index and get the first 3 bits as an int
 		if(index<2000)
-			return rc.readBroadcast(index)>>27;
+			return getUnitTypeValue(rc.readBroadcast(index));
 		else
-			return 0;
+			return 0; //convert this fromm an int to a robot type
 	}
 
+	public static int getUnitTypeValue(int index)
+	{
+		return index>>>28;
+	}
 	public boolean getUnitHealth(int index,RobotController rc) throws GameActionException
 		{
 			//return 1 for good, 0 for low. and operation with bit 4
