@@ -29,11 +29,63 @@ public class communication {
 	   
 	 */
 	
-	public void updateUnit(RobotController rc)
+	public void updateUnit(RobotController rc) throws GameActionException
 	{
+		int data=0;
+		
+		//encode type in the first 3 (MSB) bits
+		data+=getUnitTypeValue(rc)<<28;
+		
+		//encode bit 4 for health
+		data^=0x10000000; //hardcodes health as high (this needs refinment)
+		
+		//encode bit 5 for fired shot
+		if(!rc.canFirePentadShot() || !rc.canFireSingleShot() || !rc.canFireTriadShot())
+		data^=0x08000000;
+		
+		//encode 6 for mobile
+		if(rc.hasMoved())
+		data^=0x00800000;
+		
+		//encode bits 7-13 for formation id (shift 18)
+		data=appendFormationID(data,getFormationID(rc.getID(),rc));
+		
+		//encode bits 14-17 for position in formation
+		data=appendPosistionInFormation(data,getPosistionInFormation(rc.getID(),rc));
+		
+		//encode bits 18-20 for formation type
+		data=appendFormationType(data,getFormationType(rc.getID(),rc));
+		
 		
 	}
 
+	public int appendFormationID(int data, int formationID)
+	{
+		return data;
+	}
+	
+	public int appendPosistionInFormation(int data, int posistion)
+	{
+		return data;
+	}
+	
+	public int appendFormationType(int data, int type)
+	{
+		return data;
+	}
+	public int getUnitTypeValue(RobotController rc)
+	{
+		switch(rc.getType())
+		{
+		case ARCHON: return 1;
+		case GARDENER: return 2;
+		case LUMBERJACK: return 3;
+		case SOLDIER: return 4;
+		case SCOUT: return 5;
+		case TANK: return 6;
+		default: return 0;
+		}
+	}
 	public int getUnitType(int index, RobotController rc) throws GameActionException
 	{
 		//get the int from the broadcast for the associated index and get the first 3 bits as an int
