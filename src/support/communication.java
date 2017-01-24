@@ -21,6 +21,9 @@ public class communication {
 	   Channel Index 2000-2999 formation info
 	   0-3 turns since last move
 	   4-10 captains id
+	   11 has opening
+	   12-31 position open or not if applicable
+	   
 	 */
 	
 	/*
@@ -29,6 +32,15 @@ public class communication {
 	   
 	 */
 	
+	 /*
+	  * 1 -- triad
+	  * 2 -- pentad
+	  * 3 -- line
+	  * 4 -- semicircle
+	  * 5 -- decad
+	  * 6
+	  * 7
+	  */
 	public void updateUnit(RobotController rc) throws GameActionException
 	{
 		int data=0;
@@ -207,14 +219,14 @@ public class communication {
 		
 	}
 	
-	public int getPosistionInFormation(int index,RobotController rc) throws GameActionException
+	public static int getPosistionInFormation(int index,RobotController rc) throws GameActionException
 	{
 		//14-17 posistion in formation
 		int data = rc.readBroadcast(index);
 		return getIntFromBitRange(data,14,17);
 	}
 	
-	public int getFormationType(int index,RobotController rc) throws GameActionException
+	public static int getFormationType(int index,RobotController rc) throws GameActionException
 	{
 	
 		int data = rc.readBroadcast(index);
@@ -245,6 +257,90 @@ public class communication {
 		return (int)x+(int)y;
 	}
 	
+	public static int[] getOpenFormation(RobotController rc) throws GameActionException
+	{
+		//find an open spot in a formation and return the formation id
+		int res[]={0,0,0};
+		for(int i=2000; i<3000;i++)
+		{
+			int data=rc.readBroadcast(2000+i);
+			if(hasCaptain(data))
+			{
+				if(hasOpening(data))
+				{
+					//get opening
+					int captainID=getCaptainID(data);
+					int formationType=getFormationTypeFromCaptain(rc,captainID);
+					res[0]=i;
+					res[1]=formationType;
+					res[2]=openingInFormation(data,getFormationQuantity(formationType));
+					return res;
+				}
+			}
+			return res;
+				
+		}
+		return res;
+	}
+	
+	public static boolean hasCaptain(int data)
+	{
+		//4-10 Captain's id
+		return getIntFromBitRange(data,4,10)>0;
+	}
+	
+	public static int getCaptainID(int data)
+	{
+		return getIntFromBitRange(data,4,10);
+	}
+
+	public static boolean hasOpening(int data)
+	{
+		return getBitAt(data,31-11);
+	}
+	
+	public static int openingInFormation(int data,int maxUnits)
+	{
+		//12-31 open/filled positions
+		//returns open posistion
+		
+		maxUnits+=12;
+		for(int i =12;i<maxUnits;i++)
+		{
+			if(!getBitAt(data,31-i))
+				return i-12;
+		}
+		
+		return 0;
+	}
+	
+	public static int getFormationTypeFromCaptain(RobotController rc,int id) throws GameActionException
+	{
+		return getFormationType(id,rc);
+	}
+	
+	public static int getFormationQuantity(int type)
+	{
+		 /*
+		  * 1 -- triad (3)
+		  * 2 -- pentad (5)
+		  * 3 -- line (5)
+		  * 4 -- semicircle (5)
+		  * 5 -- decad (10)
+		  * 6
+		  * 7
+		  */
+		switch(type)
+		{
+		case 1: return 3;
+		case 2:
+		case 3: 
+		case 4: return 5;
+		case 5: return 10;
+	    default: return 0;
+		}
+	}
+			
 }
 	
 	
