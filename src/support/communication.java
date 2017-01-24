@@ -113,40 +113,16 @@ public class communication {
 	
 	public int getPosistionInFormation(int index,RobotController rc) throws GameActionException
 	{
+		//14-17 posistion in formation
 		int data = rc.readBroadcast(index);
-		int position=0;
-		
-		if((data & 0x00020000) == 1 ? true:false)
-			position ^= 0x00020000;
-		
-		if((data & 0x00010000) == 1 ? true:false)
-			position ^= 0x00010000;
-		
-		if((data & 0x00008000) == 1 ? true:false)
-			position ^= 0x00008000;
-		
-		if((data & 0x00004000) == 1 ? true:false)
-			position ^= 0x00004000;
-		
-		return position;
+		return getIntFromBitRange(data,14,17);
 	}
 	
 	public int getFormationType(int index,RobotController rc) throws GameActionException
 	{
 	
 		int data = rc.readBroadcast(index);
-		int type=0;
-		
-		if((data & 0x00004000) == 1 ? true:false)
-			type ^= 0x00004000;
-		
-		if((data & 0x00002000) == 1 ? true:false)
-			type ^= 0x00002000;
-		
-		if((data & 0x00001000) == 1 ? true:false)
-			type ^= 0x00001000;
-		
-		return type; 
+		return getIntFromBitRange(data,18,20);
 	}
 	
 }
