@@ -12,50 +12,76 @@ public strictfp class Gardener {
 
     public static void run(RobotController rc) {
 
-        int turnCount = 1;
         int cooldown = 0;
-        Direction preferredDir = null;
+        Direction buildDir = Utils.randomDirection();
+        Direction preferredDir = Utils.randomDirection();
+        Direction tempDir = null;
+        int wateringTree = 0;
+        boolean settled = false;
 
-        RobotType buildType = RobotType.SCOUT;
+        RobotType buildType = RobotType.LUMBERJACK;
 
         while (true) {
             try {
 
-                if (turnCount > 5) {
+
+                if (settled) {
                     TreeInfo[] trees = rc.senseNearbyTrees(3f);
 
+                    if (wateringTree < trees.length && trees.length > 0 && rc.canWater(trees[wateringTree].getLocation()))
+                        rc.water(trees[wateringTree].getLocation());
 
-                    if (trees.length > 3) {
+                    if (trees.length < 5)
+                        tryBuildTree(buildDir, rc);
 
-                        if (cooldown < 1 && Utils.tryBuild(Direction.getNorth(), unitToBuild(), rc))
-                            cooldown = 10;
+                    if (cooldown < 1 && rc.hasRobotBuildRequirements(buildType)) {
+                        if (Utils.tryBuild(preferredDir.opposite(), buildType, rc)) {
 
-                        rc.water(0);
+                            if (buildType.equals(RobotType.LUMBERJACK))
+                                lumberjacks++;
+                            else if (buildType.equals(RobotType.SCOUT))
+                                scouts++;
+                            else if (buildType.equals(RobotType.SOLDIER))
+                                soldiers++;
+                            else if (buildType.equals(RobotType.TANK))
+                                tanks++;
 
-
-                        if (rc.hasTreeBuildRequirements()) {
-                            tryBuild(rc);
-                        }
-
-                    } else {
-                        if (rc.hasTreeBuildRequirements()) {
-                            tryBuild(rc);
+                            cooldown = 15;
+                            buildType = unitToBuild();
                         }
                     }
+
+
+                } else {
+                    MapLocation currentLoc = rc.getLocation();
+
+                    tempDir = Utils.trySafeMove(preferredDir, rc);
+                    if (tempDir != null) {
+                        preferredDir = tempDir;
+                    } else {
+                        tempDir = Utils.tryMove(preferredDir, rc);
+                        if (tempDir != null)
+                            preferredDir = tempDir;
+                    }
+
+                    RobotInfo[] nearbyBots = rc.senseNearbyRobots();
+
+                    boolean nearbyGardener = false;
+
+                    for (RobotInfo bot : nearbyBots) {
+                        if (bot.getTeam() == rc.getTeam() && bot.getType() == RobotType.GARDENER)
+                            nearbyGardener = true;
+                    }
+
+                    if (!nearbyGardener &&
+                            ((!rc.isCircleOccupiedExceptByThisRobot(currentLoc, 4f)
+                                    && rc.onTheMap(currentLoc, 3.5f))
+                            || cooldown < -30))
+                        settled = true;
                 }
 
-                Direction dir = Utils.randomDirection();
-
-                if (rc.canBuildRobot(RobotType.SOLDIER, dir) && Math.random() < .01) {
-                    rc.buildRobot(RobotType.SOLDIER, dir);
-                } else if (rc.canBuildRobot(RobotType.LUMBERJACK, dir) && Math.random() < .01 && rc.isBuildReady()) {
-                    rc.buildRobot(RobotType.LUMBERJACK, dir);
-                }
-
-                Utils.tryMove(Utils.randomDirection(), rc);
-
-                turnCount++;
                 cooldown--;
+                wateringTree = (wateringTree + 1) % 5;
 
                 Clock.yield();
             }catch (Exception e) {
@@ -63,11 +89,6 @@ public strictfp class Gardener {
                 e.printStackTrace();
             }
         }
-    }
-
-    private static boolean tryWater() {
-
-        return false;
     }
 
     private static RobotType unitToBuild() {
@@ -89,24 +110,22 @@ public strictfp class Gardener {
         }
     }
 
-    private static boolean tryBuild(RobotController rc) throws GameActionException {
-
-        Direction dir = Direction.getNorth();
+    private static boolean tryBuildTree(Direction dir, RobotController rc) throws GameActionException {
 
         if (rc.canPlantTree(dir.rotateRightDegrees(60))) {
             rc.plantTree(dir.rotateRightDegrees(60));
             return true;
         } else if (rc.canPlantTree(dir.rotateRightDegrees(120))) {
+            rc.plantTree(dir.rotateRightDegrees(120));
+            return true;
+        } else if (rc.canPlantTree((dir.rotateRightDegrees(180)))) {
             rc.plantTree(dir.rotateRightDegrees(180));
             return true;
-        } else if (rc.canPlantTree((dir.opposite()))) {
-            rc.plantTree(dir.opposite());
+        } else if (rc.canPlantTree(dir.rotateRightDegrees(240))) {
+            rc.plantTree(dir.rotateRightDegrees(240));
             return true;
-        } else if (rc.canPlantTree(dir.rotateLeftDegrees(120))) {
-            rc.plantTree(dir.rotateLeftDegrees(120));
-            return true;
-        } else if (rc.canPlantTree(dir.rotateLeftDegrees(60))) {
-            rc.plantTree(dir.rotateLeftDegrees(60));
+        } else if (rc.canPlantTree(dir.rotateRightDegrees(300))) {
+            rc.plantTree(dir.rotateRightDegrees(300));
             return true;
         }
 
