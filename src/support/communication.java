@@ -7,14 +7,14 @@ public class communication {
 	
 	/*
 		Channel Index 0-1999 unit information
-		0-3 type
-		4 health
-		5 fired shot?
-		6 is mobile?
-		7-13 formation id
-		14-17 Position in formation
-		18-20 formation type
-		21-31 undefined
+		0-3 type (Archon, LumberJack...)
+		4 health (high or low)
+		5 fired shot? (true or false)
+		6 is mobile? (true or false)
+		7-13 formation id (which formation does unit belong to)
+		14-17 Position in formation 
+		18-20 formation type (triad, pentad, line, semicircle...)
+		21-31 undefined (but how does it know?)
 	*/
 	
 	/*
@@ -25,7 +25,7 @@ public class communication {
 	
 	/*
 	  Channel Index 3000-4999 location information
-	  location of unit n = channel[n+3000]
+	  location of unit n = channel[n%2000+3000]
 	   
 	 */
 	
@@ -97,7 +97,6 @@ public class communication {
 			if(getBitAt(value,31-i))
 				id+=(int)Math.pow(2,counter );
 			
-			System.out.println("id: "+id);
 			counter++;
 		}
 		
@@ -124,6 +123,26 @@ public class communication {
 		int data = rc.readBroadcast(index);
 		return getIntFromBitRange(data,18,20);
 	}
+
+	public  MapLocation getLocation(int location)
+	{
+		//gets the location of a given unit (index) from an int
+		MapLocation ml=new MapLocation(getXCoordinate(location%2000+3000),getYCoordinate(location%2000+3000));
+		return ml;
+	}
+	
+	public float getXCoordinate(int location)
+	{
+		//first 4 bytes are the x coordinate
+		return ((float)getIntFromBitRange(location,0,15));
+	}
+	
+	public float getYCoordinate(int location)
+	{
+		//last 4 bytes are the Y coordinate
+		return ((float)getIntFromBitRange(location,16,31));
+	}
+	
 	
 }
 	
