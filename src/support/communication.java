@@ -41,7 +41,7 @@ public class communication {
 	  * 6
 	  * 7
 	  */
-	public void updateUnit(RobotController rc) throws GameActionException
+	public static void updateUnit(RobotController rc) throws GameActionException
 	{
 		int data=0;
 		
@@ -74,7 +74,7 @@ public class communication {
 		
 	}
 
-	public void updateUnit(RobotController rc, boolean health, boolean mobile, boolean shotsFired,int formationID,int formationPosistion, int formationType) throws GameActionException
+	public static void updateUnit(RobotController rc, boolean health, boolean mobile, boolean shotsFired,int formationID,int formationPosistion, int formationType) throws GameActionException
 	{
 		int data=0;
 		
@@ -106,31 +106,31 @@ public class communication {
 		updateLocation(rc);
 	}
 	
-	public void updateLocation(RobotController rc,int index,int location) throws GameActionException
+	public static void updateLocation(RobotController rc,int index,int location) throws GameActionException
 	{
 		rc.broadcast(index%2000+3000, location);
 	}
 	
-	public void updateLocation(RobotController rc) throws GameActionException
+	public static void updateLocation(RobotController rc) throws GameActionException
 	{
 		updateLocation(rc,rc.getID(),convertLocationToInt(rc.getLocation().x,rc.getLocation().y));
 	}
 	
-	public int appendFormationID(int data, int formationID)
+	public static int appendFormationID(int data, int formationID)
 	{
 		return data;
 	}
 	
-	public int appendPosistionInFormation(int data, int posistion)
+	public static int appendPosistionInFormation(int data, int posistion)
 	{
 		return data;
 	}
 	
-	public int appendFormationType(int data, int type)
+	public static int appendFormationType(int data, int type)
 	{
 		return data;
 	}
-	public int getUnitTypeValue(RobotController rc)
+	public static int getUnitTypeValue(RobotController rc)
 	{
 		switch(rc.getType())
 		{
@@ -212,7 +212,7 @@ public class communication {
 		return id;
 	}
 	
-	public int getFormationID(int index,RobotController rc) throws GameActionException
+	public static int getFormationID(int index,RobotController rc) throws GameActionException
 	{
 		int data=rc.readBroadcast(index);
 		return getIntFromBitRange(data,7,13);
@@ -252,7 +252,7 @@ public class communication {
 		return ((float)getIntFromBitRange(location,16,31));
 	}
 	
-	public int convertLocationToInt(float x,float y)
+	public static int convertLocationToInt(float x,float y)
 	{
 		return (int)x+(int)y;
 	}
@@ -260,6 +260,10 @@ public class communication {
 	public static int[] getOpenFormation(RobotController rc) throws GameActionException
 	{
 		//find an open spot in a formation and return the formation id
+		//array response
+		//0=formation index
+		//1=formation type
+		//2=formation position
 		int res[]={0,0,0};
 		for(int i=2000; i<3000;i++)
 		{
@@ -341,6 +345,112 @@ public class communication {
 		}
 	}
 			
+	public static void updateFormation(RobotController rc,int [] formationInfo)
+	{
+		//formations not ready to dissolve when needed
+		
+		/*
+		   Channel Index 2000-2999 formation info
+		   0-3 turns since last move
+		   4-10 captains id
+		   11 has opening
+		   12-31 position open or not if applicable
+		   
+		 */
+		
+		//array values
+		//0=formation index
+		//1=formation type
+		//2=formation position
+		
+		int data =0;
+		
+		//update turn count
+		
+		//update captains id
+		//data=appendBitsToRange(data,4,10,.)
+		
+		//set the full bit if needed, set position of newly added unit
+		if(formationInfo[2]>getFormationQuantity(formationInfo[1]))
+		{
+			//this is a problem
+			data^=0X00100000;
+		}
+		else if(formationInfo[2]==getFormationQuantity(formationInfo[1]))
+		{
+			//encode bit 11 as true
+			data^=0X00100000;
+			data=setBitAt(data,12+formationInfo[2]);
+			
+		}
+		else
+		{
+			data=setBitAt(data,12+formationInfo[2]);
+		}
+			
+		
+	}
+	
+	public static void updateFormation(RobotController rc,int captainsID)
+	{
+	//formations not ready to dissolve when needed
+		
+		/*
+		   Channel Index 2000-2999 formation info
+		   0-3 turns since last move
+		   4-10 captains id
+		   11 has opening
+		   12-31 position open or not if applicable (not counting captain)
+		   
+		 */
+		
+		//array values
+		//0=formation index
+		//1=formation type
+		//2=formation position
+		
+		int data =0;
+		
+		//update turn count
+		
+		//update captains id
+		data=appendBitsToRange(data,4,10,captainsID);
+		
+			
+		
+	}
+	public static int setBitAt(int data,int bitPosition)
+	{
+		int set=(int) Math.pow(2, 31-bitPosition);
+		data ^= set;
+		return data;
+	}
+	public static int appendBitsToRange(int input, int start,int end, int data)
+	{
+		if(start>end)
+		{
+			int temp=start;
+			start=end;
+			end=temp;
+		}
+		data=data<<31-end;
+		input ^= data;
+		return input;
+	}
+
+	public static int findInactiveFormation(RobotController rc) throws GameActionException
+	{
+		for(int i=2000; i<3000;i++)
+		{
+			int index=rc.readBroadcast(i);
+			if(!hasCaptain(index))
+			{
+				return index;
+			}
+		}
+		
+		return 0;
+	}
 }
 	
 	
