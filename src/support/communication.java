@@ -233,20 +233,24 @@ public class communication {
 		return getIntFromBitRange(data,18,20);
 	}
 
-	public  MapLocation getLocation(int location)
+	public static int getUnitLocation(RobotController rc, int id) throws GameActionException
+	{
+		return rc.readBroadcast(id%2000+3000);
+	}
+	public static  MapLocation getLocation(int location)
 	{
 		//gets the location of a given unit (index) from an int
 		MapLocation ml=new MapLocation(getXCoordinate(location%2000+3000),getYCoordinate(location%2000+3000));
 		return ml;
 	}
 	
-	public float getXCoordinate(int location)
+	public static float getXCoordinate(int location)
 	{
 		//first 4 bytes are the x coordinate
 		return ((float)getIntFromBitRange(location,0,15));
 	}
 	
-	public float getYCoordinate(int location)
+	public static float getYCoordinate(int location)
 	{
 		//last 4 bytes are the Y coordinate
 		return ((float)getIntFromBitRange(location,16,31));
