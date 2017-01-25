@@ -391,7 +391,7 @@ public class communication {
 		
 	}
 	
-	public static void updateFormation(RobotController rc,int captainsID)
+	public static void updateFormation(RobotController rc,int captainsID,int formationType,int formationID) throws GameActionException
 	{
 	//formations not ready to dissolve when needed
 		
@@ -400,7 +400,7 @@ public class communication {
 		   0-3 turns since last move
 		   4-10 captains id
 		   11 has opening
-		   12-31 position open or not if applicable (not counting captain)
+		   12-31 position open or not if applicable (counting the captain)
 		   
 		 */
 		
@@ -415,7 +415,9 @@ public class communication {
 		
 		//update captains id
 		data=appendBitsToRange(data,4,10,captainsID);
+		rc.broadcast(formationID, data);
 		
+		updateUnit( rc, true, true, false, formationID,1, formationType);
 			
 		
 	}
