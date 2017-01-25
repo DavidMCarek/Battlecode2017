@@ -11,7 +11,7 @@ public strictfp class Archon {
         boolean moved = false;
         int stuckCount = 0;
         int gardenerCount = 0;
-        int defaultCooldown = 15;
+        int defaultCooldown = 30;
 
         int cooldown = 0;
 
@@ -70,6 +70,9 @@ public strictfp class Archon {
                 if (gardenerCount > 30) {
                     defaultCooldown = 3000;
                 }
+
+                if (rc.getTeamBullets() > 1000)
+                    rc.donate(100);
 
                 cooldown--;
                 moved = false;
