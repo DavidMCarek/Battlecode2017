@@ -12,11 +12,15 @@ public strictfp class Archon {
         int stuckCount = 0;
         int gardenerCount = 0;
         int defaultCooldown = 30;
+        Direction previousDir;
+        int lineCount = 0;
 
         int cooldown = 0;
 
         while (true) {
             try {
+
+                previousDir = preferredDir;
 
                 tempDir = Utils.avoidBullets(preferredDir, rc);
                 if (tempDir != null) {
@@ -67,12 +71,22 @@ public strictfp class Archon {
                     stuckCount = 0;
                 }
 
-                if (gardenerCount > 30) {
+                if (gardenerCount > 20) {
                     defaultCooldown = 3000;
                 }
 
                 if (rc.getTeamBullets() > 1000)
                     rc.donate(100);
+
+                if (preferredDir.equals(previousDir))
+                    lineCount++;
+                else
+                    lineCount = 0;
+
+                if (lineCount > 10) {
+                    lineCount = 0;
+                    preferredDir = Utils.randomDirection();
+                }
 
                 cooldown--;
                 moved = false;

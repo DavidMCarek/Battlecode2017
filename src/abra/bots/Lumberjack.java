@@ -10,24 +10,21 @@ public strictfp class Lumberjack {
         boolean chopped = false;
         Direction preferredDir = Utils.randomDirection();
         Direction tempDir = null;
+        Direction previousDir;
+        int lineCount = 0;
+        int stuckCount = 0;
 
         while (true) {
             try {
 
-                TreeInfo[] nearbyTrees = rc.senseNearbyTrees();
-                for (TreeInfo tree : nearbyTrees) {
-                    if (tree.getTeam() != rc.getTeam() && rc.canChop(tree.getLocation())) {
-                        rc.chop(tree.getLocation());
-                        chopped = true;
-                        break;
-                    } else if (tree.getTeam() != rc.getTeam()) {
-                        tempDir = Utils.tryMove(new Direction(rc.getLocation(), tree.getLocation()), rc);
-                        if (tempDir != null) {
-                            preferredDir = tempDir;
-                            moved = true;
-                            break;
-                        }
+                previousDir = preferredDir;
 
+                if (stuckCount > 5) {
+                    tempDir = Utils.tryMove(preferredDir, 5, 36, rc);
+                    if (tempDir != null) {
+                        preferredDir = tempDir;
+                        moved = true;
+                        stuckCount = 0;
                     }
                 }
 
@@ -36,7 +33,7 @@ public strictfp class Lumberjack {
                     if (bot.getTeam() != rc.getTeam() && rc.canStrike()) {
                         if (rc.getLocation().distanceTo(bot.getLocation()) < (2.5 + bot.getRadius()))
                             rc.strike();
-                        else if (!moved && nearbyTrees.length < 1) {
+                        else if (!moved) {
                             tempDir = Utils.tryMove(new Direction(rc.getLocation(), bot.getLocation()), rc);
                             if (tempDir != null) {
                                 preferredDir = tempDir;
@@ -46,6 +43,26 @@ public strictfp class Lumberjack {
                     }
                 }
 
+                TreeInfo[] nearbyTrees = rc.senseNearbyTrees();
+                for (TreeInfo tree : nearbyTrees) {
+                    if (tree.getTeam().equals(Team.NEUTRAL) && rc.canShake(tree.getLocation()))
+                        rc.shake(tree.getLocation());
+
+                    if (tree.getTeam() != rc.getTeam() && rc.canChop(tree.getLocation())) {
+                        rc.chop(tree.getLocation());
+                        chopped = true;
+                        break;
+                    } else if (tree.getTeam() != rc.getTeam() && !moved) {
+                        tempDir = Utils.tryMove(new Direction(rc.getLocation(), tree.getLocation()), rc);
+                        if (tempDir != null) {
+                            preferredDir = tempDir;
+                            moved = true;
+                            break;
+                        }
+                    }
+                }
+
+
                 if (!chopped && !moved) {
                     tempDir = Utils.tryMove(preferredDir, rc);
                     if (tempDir != null) {
@@ -53,6 +70,21 @@ public strictfp class Lumberjack {
                         moved = true;
                     }
                 }
+
+                if (preferredDir.equals(previousDir))
+                    lineCount++;
+                else
+                    lineCount = 0;
+
+                if (lineCount > 10) {
+                    lineCount = 0;
+                    preferredDir = Utils.randomDirection();
+                }
+
+                if (!moved && !chopped)
+                    stuckCount++;
+                else if (moved)
+                    stuckCount = 0;
 
                 moved = false;
                 chopped = false;

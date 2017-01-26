@@ -63,13 +63,30 @@ public strictfp class Utils {
         return det >= 0.0;
     }
 
-    public static Direction trySafeShot(RobotInfo[] nearbyBots, boolean[] botsCanSee, RobotController rc) throws GameActionException {
+    public static Direction trySafeShot(RobotInfo[] nearbyBots, boolean[] botsCanSee, int shotType, RobotController rc) throws GameActionException {
 
         for (int i = 0; i < botsCanSee.length; i++) {
-            if (rc.getTeam() != nearbyBots[i].getTeam() && botsCanSee[i] && rc.canFireSingleShot()) {
-                Direction shootDir = new Direction(rc.getLocation(), nearbyBots[i].getLocation());
-                rc.fireSingleShot(shootDir);
-                return shootDir;
+            if (shotType == 5) {
+                if (rc.getTeam() != nearbyBots[i].getTeam() && botsCanSee[i] && rc.canFirePentadShot()) {
+                    Direction shootDir = new Direction(rc.getLocation(), nearbyBots[i].getLocation());
+                    rc.firePentadShot(shootDir);
+                    return shootDir;
+                }
+
+            } else if (shotType == 3) {
+                if (rc.getTeam() != nearbyBots[i].getTeam() && botsCanSee[i] && rc.canFireTriadShot()) {
+                    Direction shootDir = new Direction(rc.getLocation(), nearbyBots[i].getLocation());
+                    rc.fireTriadShot(shootDir);
+                    return shootDir;
+                }
+
+            } else if (shotType == 1) {
+                if (rc.getTeam() != nearbyBots[i].getTeam() && botsCanSee[i] && rc.canFireSingleShot()) {
+                    Direction shootDir = new Direction(rc.getLocation(), nearbyBots[i].getLocation());
+                    rc.fireSingleShot(shootDir);
+                    return shootDir;
+                }
+
             }
         }
 
@@ -252,7 +269,7 @@ public strictfp class Utils {
         boolean firstEnemy = true;
 
         for (int i = 0; i < robotInfos.length; i++) {
-            if (robotInfos[i].getTeam().equals(enemyTeam) && robotInfos[i].getType().canAttack()) {
+            if (robotInfos[i].getTeam().equals(enemyTeam)) {
 
                 if (firstEnemy) {
                     dx = robotInfos[i].getLocation().directionTo(robotLocation).getDeltaX(rc.getType().strideRadius);

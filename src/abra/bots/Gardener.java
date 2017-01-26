@@ -16,26 +16,21 @@ public strictfp class Gardener {
         int treeCooldown = 0;
         Direction buildDir = Utils.randomDirection();
         Direction preferredDir = Utils.randomDirection();
+        Direction previousDir;
+        int lineCount = 0;
         Direction tempDir = null;
         int wateringTree = 0;
         boolean settled = false;
+        boolean moved = false;
 
         RobotType buildType = RobotType.LUMBERJACK;
 
         while (true) {
             try {
 
+                previousDir = preferredDir;
 
                 if (settled) {
-                    TreeInfo[] trees = rc.senseNearbyTrees(3f);
-
-                    if (wateringTree < trees.length && trees.length > 0 && rc.canWater(trees[wateringTree].getLocation()))
-                        rc.water(trees[wateringTree].getLocation());
-
-                    if ((treeCooldown < 1) && (trees.length < 5) && tryBuildTree(buildDir, rc)) {
-                        treeCooldown = 15 + (3 * trees.length);
-
-                    }
 
                     if (cooldown < 1 && rc.hasRobotBuildRequirements(buildType)) {
                         if (Utils.tryBuild(buildDir, buildType, rc)) {
@@ -53,16 +48,37 @@ public strictfp class Gardener {
                             buildType = unitToBuild();
                         }
                     }
+
+                    TreeInfo[] trees = rc.senseNearbyTrees(3f);
+
+                    if (wateringTree < trees.length && trees.length > 0 && rc.canWater(trees[wateringTree].getLocation()))
+                        rc.water(trees[wateringTree].getLocation());
+
+                    if ((treeCooldown < 1) && (trees.length < 5) && tryBuildTree(buildDir, rc)) {
+                        treeCooldown = 20 + (5 * trees.length);
+                    }
+
                 } else {
                     MapLocation currentLoc = rc.getLocation();
 
-                    tempDir = Utils.trySafeMove(preferredDir, rc);
+                    tempDir = Utils.microAway(rc);
                     if (tempDir != null) {
                         preferredDir = tempDir;
-                    } else {
-                        tempDir = Utils.tryMove(preferredDir, rc);
-                        if (tempDir != null)
+                        moved = true;
+                    }
+
+                    if (!moved) {
+                        tempDir = Utils.trySafeMove(preferredDir, rc);
+                        if (tempDir != null) {
                             preferredDir = tempDir;
+                            moved = true;
+                        } else {
+                            tempDir = Utils.tryMove(preferredDir, rc);
+                            if (tempDir != null) {
+                                preferredDir = tempDir;
+                                moved = true;
+                            }
+                        }
                     }
 
                     RobotInfo[] nearbyBots = rc.senseNearbyRobots();
@@ -83,7 +99,17 @@ public strictfp class Gardener {
                 cooldown--;
                 treeCooldown--;
                 wateringTree = (wateringTree + 1) % 5;
+                if (preferredDir.equals(previousDir))
+                    lineCount++;
+                else
+                    lineCount = 0;
 
+                if (lineCount > 10) {
+                    lineCount = 0;
+                    preferredDir = Utils.randomDirection();
+                }
+
+                moved = false;
                 Clock.yield();
             }catch (Exception e) {
                 System.out.println("Gardener Exception");
