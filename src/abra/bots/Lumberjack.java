@@ -31,6 +31,20 @@ public strictfp class Lumberjack {
                 RobotInfo[] nearbyBots = rc.senseNearbyRobots();
                 for (RobotInfo bot : nearbyBots) {
                     if (bot.getTeam() != rc.getTeam() && rc.canStrike()) {
+                        if (bot.getType().equals(RobotType.GARDENER)) {
+                            TreeInfo[] nearbyTrees = rc.senseNearbyTrees();
+                            boolean enemyTreeNear = false;
+                            for (TreeInfo tree : nearbyTrees) {
+                                if (tree.getTeam().equals(bot.getTeam())) {
+                                    enemyTreeNear = true;
+                                    break;
+                                }
+                            }
+
+                            if (enemyTreeNear)
+                                continue;
+                        }
+
                         if (rc.getLocation().distanceTo(bot.getLocation()) < (2.5 + bot.getRadius()))
                             rc.strike();
                         else if (!moved) {

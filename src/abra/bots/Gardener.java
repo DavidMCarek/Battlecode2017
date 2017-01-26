@@ -1,5 +1,6 @@
 package abra.bots;
 
+import abra.MoveUtils;
 import abra.Utils;
 import battlecode.common.*;
 
@@ -11,7 +12,6 @@ public strictfp class Gardener {
     private static int tanks = 0;
 
     public static void run(RobotController rc) {
-
         int cooldown = 0;
         int treeCooldown = 0;
         Direction buildDir = Utils.randomDirection();
@@ -61,19 +61,19 @@ public strictfp class Gardener {
                 } else {
                     MapLocation currentLoc = rc.getLocation();
 
-                    tempDir = Utils.microAway(rc);
+                    tempDir = MoveUtils.microAway(rc);
                     if (tempDir != null) {
                         preferredDir = tempDir;
                         moved = true;
                     }
 
                     if (!moved) {
-                        tempDir = Utils.trySafeMove(preferredDir, rc);
+                        tempDir = MoveUtils.trySafeMove(preferredDir, rc);
                         if (tempDir != null) {
                             preferredDir = tempDir;
                             moved = true;
                         } else {
-                            tempDir = Utils.tryMove(preferredDir, rc);
+                            tempDir = MoveUtils.tryMove(preferredDir, rc);
                             if (tempDir != null) {
                                 preferredDir = tempDir;
                                 moved = true;
@@ -108,6 +108,10 @@ public strictfp class Gardener {
                     lineCount = 0;
                     preferredDir = Utils.randomDirection();
                 }
+
+
+                if (rc.getTeamBullets() > 500)
+                    rc.donate(100);
 
                 moved = false;
                 Clock.yield();

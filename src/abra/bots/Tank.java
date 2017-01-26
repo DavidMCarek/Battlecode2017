@@ -1,5 +1,6 @@
 package abra.bots;
 
+import abra.MoveUtils;
 import abra.Utils;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
@@ -22,7 +23,7 @@ public strictfp class Tank {
                 previousDir = preferredDir;
 
                 if (stuckCount > 5) {
-                    tempDir = Utils.tryMove(preferredDir, 5, 36, rc);
+                    tempDir = MoveUtils.tryMove(preferredDir, 5, 36, rc);
                     if (tempDir != null) {
                         preferredDir = tempDir;
                         moved = true;
@@ -38,8 +39,16 @@ public strictfp class Tank {
                     fired = true;
                 }
 
+                if (!moved && fired) {
+                    tempDir = MoveUtils.trySafeMove(preferredDir.opposite(), rc);
+                    if (tempDir != null) {
+                        preferredDir = tempDir;
+                        moved = true;
+                    }
+                }
+
                 if (!moved && !fired) {
-                    tempDir = Utils.trySafeMove(preferredDir, rc);
+                    tempDir = MoveUtils.trySafeMove(preferredDir, rc);
                     if (tempDir != null) {
                         preferredDir = tempDir;
                         moved = true;
